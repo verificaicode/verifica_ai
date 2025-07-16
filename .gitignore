@@ -1,0 +1,13 @@
+# session/*
+!session/.gitkeep
+verifica_ai_temp/
+!verifica_ai_temp/.gitkeep
+libs/*
+.venv/
+
+verifai_web/node_modules/
+
+.env
+__pycache__
+!libs/.gitkeep
+config_data.json

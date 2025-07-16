@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai.types import GenerateContentConfig
 from google.genai.errors import ClientError
-from verifiai.exceptions import VerificaAiException
+from exceptions import VerificaAiException
 
 load_dotenv()
 

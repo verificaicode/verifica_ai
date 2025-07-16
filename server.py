@@ -3,9 +3,9 @@ from flask_cors import CORS
 import requests
 import os
 import socketio
-from verifiai.verifai import Verifai
-from verifiai.controls_input import ControlsInput
-from verifiai.verify_links import VerifyLinks
+from verifai import Verifai
+from controls_input import ControlsInput
+from verify_links import VerifyLinks
 import asyncio
 from threading import Thread
 

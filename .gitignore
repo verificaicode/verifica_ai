@@ -3,3 +3,8 @@
 verifica_ai_temp/
 !verifica_ai_temp/.gitkeep
 .env
+
+registro/hash.txt
+registro/verifica_ai.zip
+
+__pycache__

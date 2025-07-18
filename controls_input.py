@@ -16,7 +16,8 @@ posts = {}
 
 class ControlsInput():
     def __init__(self):
-        pass
+        with open(f"prompts/fake_news_categories.txt", 'r', encoding='utf-8') as f:
+            self.fake_news_categories = f.read() 
 
     # Envia o arquivo do post (imagem/video) para o servidor da GEMINI API
     def upload_file(self, filename):
@@ -133,11 +134,7 @@ class ControlsInput():
             return [  response, "" ] if (isinstance(response, str)) else response
     
         except ClientError as e:
-            print("aian",e,e.status)
-            if e.status == "RESOURCE_EXHAUSTED":
-                raise VerificaAiException.GeminiQuotaExceeded(e)
-            else:
-                raise e
+            raise VerificaAiException.GeminiQuotaExceeded(e)
     
     def get_uploaded_file(self, content):
             filename = content["filename"]
@@ -174,17 +171,11 @@ class ControlsInput():
                 response_text, fonts = t
 
                 response_text,_ = self.generate_response([
-                    f"""Legenda: \"{caption}\". Com base no texto \"{text}\", analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. 
-    Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-    Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
-    Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-    Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-    Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-    Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-    Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-    Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-    Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-    OBS: Responda com menos de 850 caracteres.""",
+                    (
+                        f"Legenda: \"{caption}\". Texto: \"{text}\". ",
+                        f"Com base no texto , analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
+                        self.fake_news_categories
+                    ),
                     file
                 ])
         
@@ -203,17 +194,11 @@ class ControlsInput():
                 response_text, fonts = t
 
                 response_text,_ = self.generate_response([
-                    f"""Legenda: \"{caption}\". Analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. 
-    Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-    Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
-    Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-    Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-    Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-    Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-    Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-    Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-    Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-    OBS: Responda com menos de 850 caracteres.""",
+                    (
+                        f"Legenda: \"{caption}\". Analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". ",
+                        "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
+                        self.fake_news_categories
+                    ),
                     file
                 ])
 
@@ -239,18 +224,12 @@ class ControlsInput():
 
                 response_text, fonts = t
 
-                response_text,_ = self.generate_response([
-                    f"""Analise detalhadamente o conteúdo presente na imagem com base no texto \"{text}\",. Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga ''✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. 
-    Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-    Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
-    Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-    Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-    Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-    Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-    Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-    Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-    Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-    OBS: Responda com menos de 850 caracteres""",
+                response_text,_ = self.generate_response([(
+                        f"Analise detalhadamente o conteúdo presente na imagem com base no texto \"{text}\",. "
+                        f"Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
+                        "Agora, diga ''✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
+                        self.fake_news_categories
+                    ),
                     file
                 ])
 
@@ -267,17 +246,11 @@ class ControlsInput():
                 ], True)
 
                 response_text,_ = self.generate_response([
-                    f"""Analise detalhadamente o conteúdo presente na imagem. Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga ''✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. 
-    Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-    Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
-    Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-    Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-    Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-    Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-    Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-    Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-    Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-    OBS: Responda com menos de 850 caracteres""",
+                    (
+                        f"Analise detalhadamente o conteúdo presente na imagem. Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
+                        "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
+                        self.fake_news_categories
+                    ),
                     file
                 ])
 
@@ -296,17 +269,9 @@ class ControlsInput():
             ), True)
 
             response_text,_ = self.generate_response((
-                f"""Analise a mensagem "{text}". Se ela não parece se referir a nenhum post, responda: "A mensagem não parece fornecer nenhum contexto específico.", caso contrário, analise a veracidade da mensagem com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. 
-    Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-    Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
-    Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-    Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-    Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-    Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-    Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-    Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-    Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-    OBS: Responda com menos de 850 caracteres"""
+                f"Analise a mensagem \"{text}\". Se ela não parecer uma afirmação ou algo que possa ser verificado a veracidade, responda: \"A mensagem não parece fornecer nenhum contexto específico.\", caso contrário, analise a veracidade da mensagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
+                "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
+                self.fake_news_categories
             ))
             
             return self.process_response(response_text, fonts)
@@ -319,7 +284,6 @@ class ControlsInput():
         # Se for o bot que enviou essa mensagem ou se foi o usuário que leu a mensagem enviada pelo bot, para de executar
         if sender_id == '17841474389423643' or "read" in messaging_event:
             return None
-        instagram_account_id = data['entry'][0]['id']
         # Se não for uma mensagem, para de executar
         if not ("message" in messaging_event):
             return None

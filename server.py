@@ -34,7 +34,7 @@ class Server(ControlsInput, VerifyLinks):
     
     def connect_to_server(self, attempts):
         try:
-            self.io.connect("https://verifai-proxy-uxrm.onrender.com")
+            self.io.connect(self.VERIFICA_AI_PROXY)
         
         # Erro ao tentar se conectar com o servidor
         except socketio.exceptions.ConnectionError:
@@ -71,7 +71,7 @@ class Server(ControlsInput, VerifyLinks):
             await asyncio.sleep(10)
             try:
                 if not self.DEBUG:
-                    requests.get("https://verifai-w7pk.onrender.com")
+                    requests.get(self.VERIFICA_AI_SERVER)
             except Exception as e:
                 print(e)
                 pass
@@ -88,5 +88,3 @@ class Server(ControlsInput, VerifyLinks):
             await self.loop_task
         except asyncio.CancelledError:
             os._exit(0)
-
-    # io.connect("http://127.0.0.1:12345" if DEBUG else "https://verifai-proxy.onrender.com")

@@ -40,6 +40,8 @@ class Verifai:
         self.API_KEY = os.getenv('GOOGLE_API_KEY')
         self.CSE_ID = os.getenv('GOOGLE_CSE_ID')
         self.VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
+        self.VERIFICA_AI_SERVER = os.getenv("VERIFICA_AI_SERVER")
+        self.VERIFICA_AI_PROXY = os.getenv("VERIFICA_AI_PROXY")
 
         self.client = genai.Client(api_key=self.API_KEY_GEMINI)
 

@@ -9,6 +9,7 @@ from google import genai
 from google.genai.types import GenerateContentConfig
 from google.genai.errors import ClientError
 from exceptions import VerificaAiException
+from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv()
 
@@ -16,8 +17,8 @@ posts = {}
 
 class ControlsInput():
     def __init__(self):
-        with open(f"prompts/fake_news_categories.txt", 'r', encoding='utf-8') as f:
-            self.fake_news_categories = f.read() 
+        with open(f"prompts/content_categories.txt", 'r', encoding='utf-8') as f:
+            self.content_categories = f.read() 
 
     # Envia o arquivo do post (imagem/video) para o servidor da GEMINI API
     def upload_file(self, filename):
@@ -30,6 +31,19 @@ class ControlsInput():
 
         return file
     
+    def get_fonts_url_after_redirect(self, fonts: list):
+        def fetch_url(url):
+            try:
+                response = requests.get(url, allow_redirects=True, verify=False, timeout=10)
+                return response.url
+            except Exception as e:
+                return f"Erro: {e}"
+
+        with ThreadPoolExecutor() as executor:
+            converted_fonts = list(executor.map(fetch_url, fonts))
+
+        return converted_fonts
+    
     # Extrai o texto (e as fontes caso necessário) do objeto de resposta retornado da GEMINI API
     def get_text_from_prompt(self, response):
         if len(response.candidates) > 0 and response.candidates[0].grounding_metadata and response.candidates[0].grounding_metadata.grounding_chunks:
@@ -39,7 +53,8 @@ class ControlsInput():
             text = ""
             for part in response.candidates[0].content.parts:
                 text += part.text
-            return [ text, fonts ]
+
+            return [ text, self.get_fonts_url_after_redirect(fonts) ]
         
         return response.text
 
@@ -47,15 +62,18 @@ class ControlsInput():
         url = url.split("?")[0]
         return url.split("/")[-2] if url.endswith("/") else url.split("/")[-1]
 
-    # Garante que a resposta não ultrapasse 1000 caracteres, removendo fontes até diminuir o suficiente
+    # Garante que a resposta não ultrapasse 960 caracteres, removendo fontes até diminuir o suficiente
     def process_response(self, response_text: str, fonts: list):
         formated_fonts = "Fontes:\n" + "\n\n".join(fonts)
 
-        if len(f"{response_text}\n{formated_fonts}") <= 1000:
+        if len(f"{response_text}\n{formated_fonts}") <= 960:
             return f"{response_text}\n{formated_fonts}"
         else:
-            fonts.pop()
-            return self.process_response(response_text, fonts)
+            if len(fonts) > 0:
+                fonts.pop()
+                return self.process_response(response_text, fonts)
+            else:
+                return response_text
 
     # Processa o conteudo do link e retorna o tipo do link e retorna o nome do arquivo baixado e o tipo dele
     def process_content(self, content):
@@ -63,6 +81,7 @@ class ControlsInput():
 
         try:  
             shortcode = content["shortcode"]
+
             # Se for uma postagem compartilhada pelo aplicativo do tipo video ou um video enviado pela galeria
             if is_shared_reel or ("type" in content and content["type"] == "video"):
                 response = requests.get(content["file_src"], stream=True)
@@ -71,6 +90,7 @@ class ControlsInput():
                     filename = f"{self.temp_path}/v_{str(shortcode)}.mp4"
                 else:
                     filename = f"{self.temp_path}/v_{str(shortcode)}.jpg"
+
                 with open(filename, "wb") as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
@@ -157,47 +177,32 @@ class ControlsInput():
             if object_if_is_old_message:
                 text = object_if_is_old_message["text"]
 
-                response_text,_ = self.generate_response([
-                    f"Legenda: \"{caption}\". Analise o video detalhadamente e sua legenda com base no texto \"{text}\". Para verificar se é fake news ou não, me diga exatamente separado por linhas, os temas que precisam ser pesquisados, sem gerar dados temporais com base em seus conhecimentos desatualizados. OBS: Não diga mais nada além do que pedi",
-                    file
-                ])
-
-                t = self.generate_response([
-                    f"""Legenda: \"{caption}\". Analisando o video e a legenda com base no texto \"{text}\", pesquise detalhadamente os seguintes assuntos: "{response_text}". Adapte os resultados ao contexto da mensagem, principalmente em relação ao tempo (atualidade), buscando sempre os mais recentes. Se for uma afirmação temporal, tente pequisar sobre ela em si.
+                response_text, fonts = self.generate_response([
+                    f"""Legenda: "{caption}". Segundo a mensagem "{text}", analise detalhadamente o conteúdo presente no video e na legenda. Separe em temas que podem ou não comprovar a veracidade do conteúdo presente na mensagem e e realize pesquisas para cada um deles. Busque sempre os mais recentes. Se o conteúdo for temporal, busque sobre ele em si. Retorne no final, a data de hoje (considerando horário de Brasilia).
                     """,
                     file
                 ], True)
 
-                response_text, fonts = t
-
                 response_text,_ = self.generate_response([
                     (
-                        f"Legenda: \"{caption}\". Texto: \"{text}\". ",
-                        f"Com base no texto , analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
-                        self.fake_news_categories
+                        f"""Legenda: "{caption}". Segundo a mensagem "{text}", analise detalhadamente o conteúdo presente no video e na legenda. Depois analise os seguintes resultados de pesquisa: "{response_text}". Se a mensagem conter 'hoje', considere a data previamente fornecida para verificação.
+                        """,
+                        self.content_categories
                     ),
                     file
                 ])
         
             else:
-                response_text,_ = self.generate_response([
-                    f"Legenda: \"{caption}\". Analise o video detalhadamente e sua legenda. Para verificar se é fake news ou não, me diga exatamente separado por linhas, os temas que precisam ser pesquisados, sem gerar dados temporais com base em seus conhecimentos desatualizados. OBS: Não diga mais nada além do que pedi",
-                    file
-                ])
-
-                t = self.generate_response([
-                    f"""Legenda: \"{caption}\". Com base no video e na legenda apresentada, pesquise detalhadamente os seguintes assuntos: "{response_text}". Adapte os resultados ao contexto da mensagem, principalmente em relação ao tempo (atualidade), buscando sempre os mais recentes. Se for uma afirmação temporal, tente pequisar sobre ela em si.
+                response_text, fonts = self.generate_response([
+                    f"""Legenda: "{caption}". Analise detalhadamento o conteúdo presente no video e na legenda. Separe em temas que podem ou não comprovar sua veracidade e realize pesquisas para cada um deles. Busque sempre os mais recentes. Se o conteúdo for temporal, busque sobre ele em si. Retorne no final, a data de hoje (considerando horário de Brasilia).
                     """,
                     file
                 ], True)
 
-                response_text, fonts = t
-
                 response_text,_ = self.generate_response([
                     (
-                        f"Legenda: \"{caption}\". Analise o video detalhadamente e a legenda, depois analise a veracidade deles com os seguintes resultados de pesquisa: \"{response_text}\". ",
-                        "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
-                        self.fake_news_categories
+                        f"""Legenda: "{caption}". Analise detalhadamente o conteúdo presente no video e na legenda. Depois analise os seguintes resultados de pesquisa: "{response_text}".""",
+                        self.content_categories
                     ),
                     file
                 ])
@@ -211,45 +216,31 @@ class ControlsInput():
             if object_if_is_old_message:
                 text = object_if_is_old_message["text"]
 
-                response_text,_ = self.generate_response([
-                    f"Transforme o conteúdo dessa imagem e do texto: \"{text}\" para uma pesquisa da web com o intuito de verificar a veracidade. Me diga exatamente separado por linhas, os temas que precisam ser pesquisados, sem gerar dados temporais com base em seus conhecimentos desatualizados. OBS: Não diga mais nada além do que pedi.",
-                    file
-                ])
-
-                t = self.generate_response([
-                    f"""Com base no conteúdo da imagem e do texto \"{text}\", pesquise detalhadamente os seguintes assuntos: "{response_text}". Adapte os resultados ao contexto da imagem, principalmente em relação ao tempo (atualidade), buscando sempre os mais recentes. OBS: Responda com menos de 850 caracteres.
+                response_text, fonts = self.generate_response([
+                    f"""Segundo a mensagem "{text}", analise detalhadamente o conteúdo presente na imagem. Realize pesquisas sobre assuntos que podem ou não comprovar a veracidade do conteúdo presente na mensagem. Busque sempre os mais recentes. Se o conteúdo for temporal, busque sobre ele em si. Retorne no final, a data de hoje (considerando horário de Brasilia).
                     """,
                     file
                 ], True)
 
-                response_text, fonts = t
-
                 response_text,_ = self.generate_response([(
-                        f"Analise detalhadamente o conteúdo presente na imagem com base no texto \"{text}\",. "
-                        f"Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
-                        "Agora, diga ''✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
-                        self.fake_news_categories
+                        f"""Segundo a mensagem "{text}", analise detalhadamente o conteúdo presente na imagem. Depois, analise os seguintes resultados de pesquisa: "{response_text}". Se a mensagem conter 'hoje', considere a data previamente fornecida para verificação.""",
+                        self.content_categories
                     ),
                     file
                 ])
 
             else:
-                response_text,_ = self.generate_response([
-                    f"Transforme o conteúdo dessa imagem para uma pesquisa da web com o intuito de verificar a veracidade. Me diga exatamente separado por linhas, os temas que precisam ser pesquisados, sem gerar dados temporais com base em seus conhecimentos desatualizados. OBS: Não diga mais nada além do que pedi.",
-                    file
-                ])
-
                 response_text, fonts = self.generate_response([
-                    f"""Com base no conteúdo da imagem, pesquise detalhadamente os seguintes assuntos: "{response_text}". Adapte os resultados ao contexto da imagem, principalmente em relação ao tempo (atualidade), buscando sempre os mais recentes. OBS: Responda com menos de 850 caracteres.
+                    f"""Analise detalhadamente o conteúdo presente na imagem. Realize pesquisas sobre assuntos que podem ou não comprovar sua veracidade. Busque sempre os mais recentes. Se o conteúdo for temporal, busque sobre ele em si. Retorne no final, a data de hoje (considerando horário de Brasilia).
                     """,
                     file
                 ], True)
 
                 response_text,_ = self.generate_response([
                     (
-                        f"Analise detalhadamente o conteúdo presente na imagem. Analise a veracidade da imagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
-                        "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
-                        self.fake_news_categories
+                        f"""Analise detalhadamente o conteúdo presente na imagem. Depois analise os seguintes resultados de pesquisa: "{response_text}".
+                        """,
+                        self.content_categories
                     ),
                     file
                 ])
@@ -260,18 +251,15 @@ class ControlsInput():
         elif type == "text":
             text = content["text"]
 
-            response_text,_ = self.generate_response([
-                f"Analise a mensagem: \"{text}\"\n. Para verificar se é fake news ou não, me diga exatamente separado por linhas, os temas que precisam ser pesquisados, sem gerar dados temporais com base em seus conhecimentos desatualizados. OBS: Não diga mais nada além do que pedi"
-            ])
-            
             response_text, fonts = self.generate_response((
-                f"""Com base na mensagem: "{text}", pesquise detalhadamente os seguintes assuntos: "{response_text}". Adapte os resultados ao contexto da mensagem, principalmente em relação ao tempo (atualidade), buscando sempre os mais recentes. Se for uma afirmação temporal, tente pequisar sobre ela em si."""
+                f"""Analise detalhadamente a mensagem: "{text}". Realize pesquisas sobre assuntos que podem ou não comprovar sua veracidade. Busque sempre os mais recentes. Se o conteúdo for temporal, busque sobre ele em si. Retorne no final, a data de hoje (considerando horário de Brasilia).
+                """
             ), True)
 
             response_text,_ = self.generate_response((
-                f"Analise a mensagem \"{text}\". Se ela não parecer uma afirmação ou algo que possa ser verificado a veracidade, responda: \"A mensagem não parece fornecer nenhum contexto específico.\", caso contrário, analise a veracidade da mensagem com os seguintes resultados de pesquisa: \"{response_text}\". ",
-                "Agora, diga '✅ É fato' ou '❌ É fake' no começo da resposta. Diga que é fato apenas se todos os dados condizerem com as pesquisas, principalmente os temporais. ",
-                self.fake_news_categories
+                f"""Analise detalhadamente o conteúdo presente na mensagem "{text}". Depois analise os seguintes resultados de pesquisa: "{response_text}". Se a mensagem conter 'hoje' e não especificar o contexto como de alguma outra data, analise com base na data previamente fornecida para verificação.
+                """,
+                self.content_categories
             ))
             
             return self.process_response(response_text, fonts)
@@ -316,6 +304,7 @@ class ControlsInput():
                         "shortcode": shortcode,
                         "post": post,
                         "caption": caption,
+                        "data": post.date,
                         "might_execute": True
                     }
 
@@ -333,6 +322,7 @@ class ControlsInput():
                         "shortcode": shortcode,
                         "post": post,
                         "caption": caption,
+                        "data": post.date,
                         "might_execute": True
                     }
                 
@@ -448,6 +438,25 @@ class ControlsInput():
                 self.send_message_to_user(sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
             return
         
+    def get_final_response(self, response):
+        parcial_response, fonts = response.split("Fontes:") if "Fontes:" in response else [response, ""]
+        # parcial_response = parcial_response.split("É fato")[1] if "É fato" in parcial_response else parcial_response.split("É fake")[1] if "É fake" in parcial_response else parcial_response
+
+
+        # x = [self.is_fact_tokenizer.infer_vector(parcial_response.lower().split())]
+        x = [parcial_response]
+
+        classe = int(self.is_fact_model.predict(x)[0])
+        print(classe)
+        if classe == 2:
+            return f"✅ É fato\n\n{parcial_response}{fonts}"
+        elif classe == 1:
+            return f"🤔 Informações insuficientes\n\n{parcial_response}{fonts}"
+        else:
+            type_fake_class = self.type_fake_name_classes[self.type_fake_model.predict([parcial_response])[0]]
+            return f"{type_fake_class}\n\n{parcial_response}{fonts}"
+
+
     # Fornece os dados necessários para serem passados para o prompt
     def get_result_from_process(self, content):
         try:
@@ -462,14 +471,14 @@ class ControlsInput():
                     "object_if_is_old_message": content["object_if_is_old_message"] if "object_if_is_old_message" in content else None,
                     "might_execute": content["might_execute"]
                 }
-                return self.get_response_from_type(type, new_content)
+                return self.get_final_response(self.get_response_from_type(type, new_content))
 
             # Se for texto
             else:
                 new_content = { 
                     "text": content["text"]
                 }
-                return self.get_response_from_type("text", new_content)
+                return self.get_final_response(self.get_response_from_type("text", new_content))
 
         except Exception as e:
             print(e)

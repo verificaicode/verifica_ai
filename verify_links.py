@@ -12,8 +12,9 @@ class VerifyLinks():
             return json.dumps({ "error": "401", "type": "INVALID_TOKEN" }), 200
         
         link = data["link"]
+        message = data["message"] if "message" in data else {}
 
-        content = self.get_content_object(str(int(time.time() * 1000)), {}, link)
+        content = self.get_content_object(str(int(time.time() * 1000)), message, link)
         response_text = self.get_result_from_process(content)
 
         return json.dumps({ "response": response_text }), 200

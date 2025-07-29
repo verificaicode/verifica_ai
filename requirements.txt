@@ -7,3 +7,4 @@ Pillow==11.2.1
 instaloader==4.14.1
 flask-cors==6.0.0
 dotenv==0.9.9
+joblib

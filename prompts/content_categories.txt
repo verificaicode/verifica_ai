@@ -1,10 +1,12 @@
-Se for fake news, com base nas definições a seguir, classifique o tipo de desinformação representado. As categorias são:
-Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente.
+Verifique a veracidadedo conteúdo de acordo com as pesquisas fornecidas. A data fornecida na pesquisa é a data de hoje, ignore a sua de treinamento, pois as pesquisas já fornecem dados atualizados.
+Se for fato ou muito provavelmente verdadeiro, entenda como fato. Explique detalhadamente os motivos.
+Se não for possível determinar se o post é fato ou fake, explique que não foi possivel determinar a veracidade devido a falta de tal informações.
+Se for fake, gere uma explicação detlhada do porquê, seguindo uma dessas lógicas:
+Sátira ou paródia: Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente. Entram nessa classificação os memese posts com intenção de divertir o leitor, mostrando informações absurdas ou claramente fora de contexto, ambas inofensivas.
 Conexão falsa: Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
 Conteúdo enganoso: Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
 Contexto falso: Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
 Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
 Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
 Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-Deixe a classificação clara. Na linha debaixo, justifique sua resposta para tal classificação com base nos dados apresentados.
-OBS: Responda com menos de 850 caracteres.
+OBS: Gere uma explicação muito detalhada em torno de 800 caracteres, porém obrigatóriamente menos que 850.

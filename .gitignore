@@ -1,7 +1,7 @@
 # session/*
-!session/.gitkeep
-verifica_ai_temp/
-!verifica_ai_temp/.gitkeep
+!tmp/session/.gitkeep
+tmp/files/
+!files/.gitkeep
 .env
 
 registro/hash.txt

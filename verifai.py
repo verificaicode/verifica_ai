@@ -4,7 +4,7 @@ from google import genai
 from dotenv import load_dotenv
 from google.genai.types import Tool, GoogleSearch
 import time
-from load_models import Models
+from models import Models
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -15,20 +15,6 @@ class Verifai:
         self.models = Models()
 
         self.temp_path = "tmp/files"
-
-        start = time.time()
-        self.L = instaloader.Instaloader(
-            filename_pattern="vl_{shortcode}",
-            dirname_pattern=self.temp_path,
-            download_videos=True,
-            download_video_thumbnails=True,
-            download_geotags=False,
-            save_metadata=False,
-            download_comments=False,
-            post_metadata_txt_pattern=''
-        )
-        print("Instaloader carregado em:", time.time() - start)
-
         self.username = os.getenv("IG_USERNAME")
         self.password = os.getenv("IG_PASSWORD")
         self.API_KEY_GEMINI = os.getenv("API_KEY_GEMINI")
@@ -41,12 +27,33 @@ class Verifai:
         self.VERIFICA_AI_PROXY = os.getenv("VERIFICA_AI_PROXY")
 
         start = time.time()
-        self.client = genai.Client(api_key=self.API_KEY_GEMINI)
 
+        self.L = instaloader.Instaloader(
+            filename_pattern="vl_{shortcode}",
+            dirname_pattern=self.temp_path,
+            download_videos=True,
+            download_video_thumbnails=True,
+            download_geotags=False,
+            save_metadata=False,
+            download_comments=False,
+            post_metadata_txt_pattern=''
+        )
+        if os.path.isfile(f"{os.getcwd()}/tmp/session/{self.username}"):
+            self.L.load_session_from_file(self.username, filename=f"{os.getcwd()}/tmp/session/{self.username}")  # se já tiver salvo antes
+        else:
+            self.L.login(self.username, self.password)  # Vai fazer o login e manter a sessão
+            self.L.save_session_to_file(filename=f"{os.getcwd()}/tmp/session/{self.username}")
+        
+        print("Instaloader carregado em:", time.time() - start)
+
+        start = time.time()
+
+        self.client = genai.Client(api_key=self.API_KEY_GEMINI)
         self.google_search_tool = Tool(
             google_search = GoogleSearch()
         )
-        print("AIs carregadas em", time.time() - start)
+
+        print("Conexão com LLM feito em:", time.time() - start)
 
         self.type_fake_name_classes = [
             "🤣 Sátira ou paródia",

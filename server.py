@@ -16,12 +16,6 @@ class Server(ControlsInput, VerifyLinks):
         ControlsInput.__init__(self)
         VerifyLinks.__init__(self)
 
-        if os.path.isfile(f"{os.getcwd()}/session/{self.username}"):
-            self.L.load_session_from_file(self.username, filename=f"{os.getcwd()}/session/{self.username}")  # se já tiver salvo antes
-        else:
-            self.L.login(self.username, self.password)  # Vai fazer o login e manter a sessão
-            self.L.save_session_to_file(filename=f"{os.getcwd()}/session/{self.username}")
-
         self.app = Flask(__name__)
 
         CORS(self.app)

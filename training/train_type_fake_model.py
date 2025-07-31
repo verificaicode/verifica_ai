@@ -25,7 +25,7 @@ new_x_test = dataset_test["explication"]  # ou df.iloc[:, 0] se preferir por ín
 new_y_test = dataset_test["label"]      # ou df.iloc[:, 1]
 
 
-df = pd.read_csv("type_fake.csv")
+df = pd.read_csv("../datasets/type_fake.csv")
 
 texts = df["text"]  # ou df.iloc[:, 0] se preferir por índice
 labels = df["subcategory"]      # ou df.iloc[:, 1]

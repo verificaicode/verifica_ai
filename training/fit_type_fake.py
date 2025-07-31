@@ -1,5 +1,4 @@
 import joblib
-import os
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import classification_report
@@ -20,16 +19,16 @@ import pandas as pd
 # texts2 = df2["texto"]  # ou df.iloc[:, 0] se preferir por índice
 # labels2 = df2["id"]      # ou df.iloc[:, 1]
 
-dataset_test = pd.read_csv("is_fact_explications.csv")
+dataset_test = pd.read_csv("../datasets/is_fact_explications.csv")
 
 new_x_test = dataset_test["explication"]  # ou df.iloc[:, 0] se preferir por índice
 new_y_test = dataset_test["label"]      # ou df.iloc[:, 1]
 
 
-df = pd.read_csv("is_fact.csv")
+df = pd.read_csv("type_fake.csv")
 
 texts = df["text"]  # ou df.iloc[:, 0] se preferir por índice
-labels = df["label"]      # ou df.iloc[:, 1]
+labels = df["subcategory"]      # ou df.iloc[:, 1]
 
 print("carregado")
 
@@ -75,7 +74,7 @@ modelo = Pipeline([
     ("clf",  MLPClassifier(
         activation="relu",
         alpha=0.0005,
-        hidden_layer_sizes=(64,48),
+        hidden_layer_sizes=(32,16),
         # learning_rate_init=0.001,
         learning_rate='adaptive',
         max_iter=600,
@@ -109,23 +108,26 @@ param_grid = {
 # print("Melhor score (accuracy):", grid_search.best_score_)
 modelo.fit(X_train, y_train)
 
-# def predict(phrases):
-#   print(modelo.predict([phrase.lower() for phrase in phrases]))
+def predict(phrases):
+  print(modelo.predict([phrase.lower() for phrase in phrases]))
 
-# predict(new_x_test)
+predict([
+    """A mensagem "o IFPI foi fundado em 11 de setembro de 2001" é **fake**. A análise detalhada e os resultados de pesquisa fornecidos confirmam que a International Federation of the Phonographic Industry (IFPI) foi fundada em **1933**, e não em 2001. A data de 11 de setembro de 2001 não tem nenhuma relação com a fundação da organização. Portanto, a mensagem se encaixa na categoria de **conteúdo fabricado**, pois apresenta uma informação completamente falsa sobre a data de fundação do IFPI. O objetivo, nesse caso, pode ser desinformar ou gerar confusão.""",
+    "A imagem, juntamente com a frase sobre o paraquedas, configura um caso de **sátira ou paródia**. A intenção primária não é desinformar, mas sim provocar humor através de uma situação hipotética e exagerada. A frase faz uso de ironia ao sugerir que a falha de um paraquedas acelera a chegada ao ""destino"", quando, na realidade, tal falha pode ter consequências trágicas. As pesquisas corroboram que, embora o paraquedismo tenha seus riscos, há medidas de segurança como o paraquedas reserva. A frase, portanto, deve ser interpretada como uma piada e não como uma informação factual."
+])
 
 # y_pred = modelo.predict(x_pred)
 # grid_search.fit(X, [rotular(v) for v in confiancas])
 
-y_pred = modelo.predict(new_x_test)
-print(new_y_test.tolist())
+y_pred = modelo.predict(X_test)
+print(y_test.tolist())
 print(y_pred.tolist())
-print(classification_report(new_y_test, y_pred))
+print(classification_report(y_test, y_pred))
 # print("Melhores parâmetros:", grid_search.best_params_)
 # print("Melhor score (accuracy):", grid_search.best_score_)
 # print(accuracy_score([rotular(v) for v in new_confiances], y_pred))
 
 # tokenizer.save("is_fact_tokenizer.model")
-joblib.dump(modelo, "is_fact_model.pkl")
+joblib.dump(modelo, "../models/type_fake_model.pkl")
 
 # joblib.dump((tokenizer, modelo), os.path.dirname(os.path.abspath(__file__)) + '/is_fact_model.pkl')

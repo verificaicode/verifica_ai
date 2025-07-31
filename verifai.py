@@ -1,28 +1,20 @@
 import instaloader
 import os
 from google import genai
-from gensim.models import Doc2Vec
 from dotenv import load_dotenv
 from google.genai.types import Tool, GoogleSearch
-import joblib
 import time
+from load_models import Models
 
 # Carrega variáveis de ambiente
 load_dotenv()
 
-# models = [
-    # gemini-1.5-flash
-    # gemini-1.5-flash-8b
-    # gemini-1.5-pro
-    # gemini-2.0-flash
-    # gemini-2.0-flash-lite
-    # gemini-2.0-flash-preview-image-generation
-    # gemini-2.5-flash-preview-04-17
-# ]
 
 class Verifai:
     def __init__(self):
-        self.temp_path = "verifica_ai_temp"
+        self.models = Models()
+
+        self.temp_path = "tmp/files"
 
         start = time.time()
         self.L = instaloader.Instaloader(
@@ -56,17 +48,6 @@ class Verifai:
         )
         print("AIs carregadas em", time.time() - start)
 
-        self.model = "gemini-2.0-flash"
-
-        # start = time.time()
-        # self.is_fact_tokenizer = Doc2Vec.load("models/is_fact_tokenizer.model")
-        # print("Doc2Vec carregado em", time.time() - start)
-        start = time.time()
-        self.is_fact_model = joblib.load('models/is_fact_model.pkl')
-        print("Joblib carregado em", time.time() - start)
-
-        # type_fake_tokenizer, type_fake_model = joblib.load('models/type_fake_model.pkl')
-        self.type_fake_model = joblib.load('models/type_fake_model.pkl')
         self.type_fake_name_classes = [
             "🤣 Sátira ou paródia",
             "🤷 Conexão falsa",
@@ -76,3 +57,15 @@ class Verifai:
             "✂️ Conteúdo manipulado",
             "🧪 Conteúdo fabricado",
         ]
+
+
+        self.model = "gemini-2.0-flash"
+                
+        #models:
+            # gemini-1.5-flash
+            # gemini-1.5-flash-8b
+            # gemini-1.5-pro
+            # gemini-2.0-flash
+            # gemini-2.0-flash-lite
+            # gemini-2.0-flash-preview-image-generation
+            # gemini-2.5-flash-preview-04-17

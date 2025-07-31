@@ -101,7 +101,7 @@ class ControlsInput():
                     return [ filename, "image" ]
                 
             else:               
-                self.L.download_post(content["post"], target="verifica_ai_temp")
+                self.L.download_post(content["post"], target="tmp/files")
 
                 if content["post"].is_video:
                     filename = f"{self.temp_path}/vl_{shortcode}.mp4"
@@ -444,16 +444,17 @@ class ControlsInput():
 
 
         # x = [self.is_fact_tokenizer.infer_vector(parcial_response.lower().split())]
-        x = [parcial_response]
 
-        classe = int(self.is_fact_model.predict(x)[0])
+        classe = self.models.is_fact_predict(parcial_response)
         print(classe)
         if classe == 2:
             return f"✅ É fato\n\n{parcial_response}{fonts}"
+        
         elif classe == 1:
             return f"🤔 Informações insuficientes\n\n{parcial_response}{fonts}"
+        
         else:
-            type_fake_class = self.type_fake_name_classes[self.type_fake_model.predict([parcial_response])[0]]
+            type_fake_class = self.type_fake_name_classes[self.models.type_fake_predict(parcial_response)]
             return f"{type_fake_class}\n\n{parcial_response}{fonts}"
 
 

@@ -174,7 +174,6 @@ classDiagram
     +get_gemini_response()
   }
 
-  verifica_ai --> Server : «1» gerencia conexão para recebimento de mensagens
   Server --> AppContext : «2» define constantes
   Server --> InputHandler
   InputHandler --> ContentExtractor : «3» extrai conteúdo

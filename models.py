@@ -25,11 +25,20 @@ class Models():
         self.input_details = self.is_fact_model.get_input_details()
         self.output_details = self.is_fact_model.get_output_details()
 
+        # print("Modelos carregados em:", time.time() - start)
+
+        # start = time.time()
 
         #Carrega modelo que classifica entre os tipos de não fato
         self.is_fact_vectorizer = joblib.load("models/is_fact_vectorizer.pkl")
 
+        self.type_fake_model = joblib.load("models/type_fake_model.pkl")
+
         print("Modelos carregados em:", time.time() - start)
+
+        # start = time.time()
+        # self.is_fact_predict("A imagem mostra um bebê com escamas e alega ser um híbrido reptiliano, mas trata-se de uma condição genética rara. A legenda explora o sensacionalismo ao invés de promover compreensão científica.")
+        # print("Modelos carregados em:", time.time() - start)
 
     def is_fact_predict(self, phrase):
         data_vectorized = self.is_fact_vectorizer.transform([phrase]).astype('float32')
@@ -38,7 +47,7 @@ class Models():
         return int(np.argmax(self.is_fact_model.get_tensor(self.output_details[0]['index'])[0]))
 
     def type_fake_predict(self, phrase):
-        return int(self.type_fake_predict([phrase])[0])
+        return int(self.type_fake_model.predict([phrase])[0])
 
 def load_models():
 

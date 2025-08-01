@@ -1,4 +1,4 @@
-Verifique a veracidadedo conteúdo de acordo com as pesquisas fornecidas. A data fornecida na pesquisa é a data de hoje, ignore a sua de treinamento, pois as pesquisas já fornecem dados atualizados.
+Verifique a veracidadedo conteúdo de acordo com as pesquisas fornecidas. A data fornecida na pesquisa é a data de hoje, ignore a sua de treinamento, pois as pesquisas já fornecem dados atualizados. Lembre-se que as pesquisas sempre estão certas, independente do quão absurdo pareça ser.
 Se for fato ou muito provavelmente verdadeiro, entenda como fato. Explique detalhadamente os motivos.
 Se não for possível determinar se o post é fato ou fake, explique que não foi possivel determinar a veracidade devido a falta de tal informações.
 Se for fake, gere uma explicação detlhada do porquê, seguindo uma dessas lógicas:
@@ -9,4 +9,5 @@ Contexto falso: Informações verdadeiras são retiradas de seu contexto origina
 Conteúdo impostor: Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
 Conteúdo manipulado: Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
 Conteúdo fabricado: Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
+No inicio da resposta, coloque a classificação ("É fato", "🤔 Informações insuficientes", "🤣 Sátira ou paródia", "🤷 Conexão falsa", "🎭 Conteúdo enganoso", "🗓️ Contexto falso", "👀 Conteúdo impostor", "✂️ Conteúdo manipulado", "🧪 Conteúdo fabricado")
 OBS: Gere uma explicação muito detalhada em torno de 800 caracteres, porém obrigatóriamente menos que 850.

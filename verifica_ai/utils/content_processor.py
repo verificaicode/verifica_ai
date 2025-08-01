@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from urllib.parse import parse_qs, urlparse
 import requests
 import urllib3
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

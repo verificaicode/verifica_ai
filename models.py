@@ -1,10 +1,10 @@
 import platform
-import joblib
 import time
+
+import joblib
 import numpy as np
 
 os_type = platform.system()
-
 
 if os_type == "Windows":
     from tensorflow._api.v2.lite import Interpreter
@@ -15,6 +15,7 @@ else:
         print("Usando TFLite Runtime (Linux/macOS)")
     except ImportError:
         print("Erro: tflite_runtime não está instalado.")
+
 
 class Models():
     def __init__(self):
@@ -48,15 +49,3 @@ class Models():
 
     def type_fake_predict(self, phrase):
         return int(self.type_fake_model.predict([phrase])[0])
-
-def load_models():
-
-    
-    start = time.time()
-    is_fact_model = platform.system()
-    is_fact_model = joblib.load('models/is_fact_model.pkl')
-    print("Joblib carregado em", time.time() - start)
-
-    # type_fake_tokenizer, type_fake_model = joblib.load('models/type_fake_model.pkl')
-    type_fake_model = joblib.load('models/type_fake_model.pkl')
-    return is_fact_model, is_fact_vectorizer, type_fake_model

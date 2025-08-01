@@ -1,31 +1,39 @@
-from flask import Flask, request
-from flask_cors import CORS
-import requests
-import os
-import socketio
-from verifai import Verifai
-from controls_input import ControlsInput
-from verify_links import VerifyLinks
 import asyncio
+import os
 from threading import Thread
 import time
 
-class Server(ControlsInput, VerifyLinks):
+from flask import Flask, request
+from flask_cors import CORS
+import requests
+from socketio import Client
+from socketio.exceptions import ConnectionError
+
+from verifica_ai.app_context import AppContext
+from verifica_ai.gemini_response_generator import GeminiResponseGenerator
+from verifica_ai.input_handler import InputHandler
+from verifica_ai.verify_links import VerifyLinks
+
+
+class Server(AppContext, GeminiResponseGenerator, InputHandler, VerifyLinks):
     def __init__(self):
-        Verifai.__init__(self)
-        ControlsInput.__init__(self)
+        AppContext.__init__(self)
+        GeminiResponseGenerator.__init__(self)
+        InputHandler.__init__(self)
         VerifyLinks.__init__(self)
 
         self.app = Flask(__name__)
 
         CORS(self.app)
 
-        self.io = socketio.Client()
+        self.io = Client()
 
         self.register_routes()
 
-        if self.DEBUG:
-            self.connect_to_server()
+        self.connect_to_server()
+
+        asyncio.run(self.run_flask_server())
+
     
     def connect_to_server(self):
         while True:
@@ -33,13 +41,11 @@ class Server(ControlsInput, VerifyLinks):
                 self.io.connect(self.VERIFICA_AI_PROXY)
                 time.sleep(1)
             # Erro ao tentar se conectar com o servidor
-            except socketio.exceptions.ConnectionError:
+            except ConnectionError:
                 pass
 
             else:
                 break
-
-
 
     def connect(self):
         print("Conectado ao servidor.")
@@ -74,12 +80,12 @@ class Server(ControlsInput, VerifyLinks):
                 print(e)
                 pass
 
-    def run_flask(self):
+    def run_app_flask(self):
             self.app.run("0.0.0.0", port=5000)
     
-    async def main(self):
+    async def run_flask_server(self):
         try:
-            flask_thread = Thread(target=self.run_flask)
+            flask_thread = Thread(target=self.run_app_flask)
             flask_thread.daemon = True
             flask_thread.start()
             self.loop_task = asyncio.create_task(self.loop())

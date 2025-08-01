@@ -1,5 +1,5 @@
-from instaloader.exceptions import BadResponseException
 from google.genai.errors import ClientError
+from instaloader.exceptions import BadResponseException
 
 class VerificaAiException:
     "Tratamento de erros"

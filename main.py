@@ -1,10 +1,5 @@
-from server import Server
-from dotenv import load_dotenv
-import asyncio
+from verifica_ai.app_context import AppContext
+from verifica_ai.server import Server
 
-load_dotenv()
-
+app_context = AppContext()
 server = Server()
-
-if __name__ == "__main__":
-    asyncio.run(server.main())

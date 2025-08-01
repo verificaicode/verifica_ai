@@ -1,14 +1,14 @@
-Flask==3.1.0
-google-genai==1.16.1
-requests==2.32.3
-python-socketio[client]==5.13.0
-python-dotenv==1.1.0
-Pillow==11.2.1
-instaloader==4.14.1
-flask-cors==6.0.0
 dotenv==0.9.9
-scikit-learn
-tensorflow; platform_system == "Windows"
+Flask==3.1.0
+flask-cors==6.0.0
+google-genai==1.16.1
+instaloader==4.14.1
+Pillow==11.2.1
+python-dotenv==1.1.0
+python-socketio[client]==5.13.0
+requests==2.32.3
+scikit-learn==1.7.1
 numpy; platform_system == "Windows"
-tflite-runtime; platform_system == "Linux"
 numpy==1.26.4; platform_system == "Linux"
+tensorflow; platform_system == "Windows"
+tflite-runtime; platform_system == "Linux"

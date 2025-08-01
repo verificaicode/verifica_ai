@@ -1,36 +1,39 @@
-import instaloader
 import os
-from google import genai
-from dotenv import load_dotenv
-from google.genai.types import Tool, GoogleSearch
 import time
-from models import Models
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai.types import Tool, GoogleSearch
+import instaloader
+
+# from verifica_ai.models import Models
+
 
 # Carrega variáveis de ambiente
 load_dotenv()
 
-
-class Verifai:
+class AppContext():
     def __init__(self):
-        self.models = Models()
+        # self.models = Models()
+        self.models = {}
+        self.posts = {}
 
-        self.temp_path = "tmp/files"
-        self.username = os.getenv("IG_USERNAME")
-        self.password = os.getenv("IG_PASSWORD")
+        # Definição de constantes
+        self.TEMP_PATH = "tmp/files"
+        self.USERNAME = os.getenv("IG_USERNAME")
+        self.PASSWORD = os.getenv("IG_PASSWORD")
         self.API_KEY_GEMINI = os.getenv("API_KEY_GEMINI")
         self.PAGE_ACCESS_TOKEN = os.getenv("PAGE_ACCESS_TOKEN")
         self.DEBUG = os.getenv("DEBUG") == "true"
-        self.API_KEY = os.getenv('GOOGLE_API_KEY')
-        self.CSE_ID = os.getenv('GOOGLE_CSE_ID')
         self.VERIFY_TOKEN = os.getenv("VERIFY_TOKEN")
         self.VERIFICA_AI_SERVER = os.getenv("VERIFICA_AI_SERVER")
         self.VERIFICA_AI_PROXY = os.getenv("VERIFICA_AI_PROXY")
 
         start = time.time()
 
-        self.L = instaloader.Instaloader(
+        self.instaloader_context = instaloader.Instaloader(
             filename_pattern="vl_{shortcode}",
-            dirname_pattern=self.temp_path,
+            dirname_pattern=self.TEMP_PATH,
             download_videos=True,
             download_video_thumbnails=True,
             download_geotags=False,
@@ -38,17 +41,18 @@ class Verifai:
             download_comments=False,
             post_metadata_txt_pattern=''
         )
-        if os.path.isfile(f"{os.getcwd()}/tmp/session/{self.username}"):
-            self.L.load_session_from_file(self.username, filename=f"{os.getcwd()}/tmp/session/{self.username}")  # se já tiver salvo antes
+
+        if os.path.isfile(f"{os.getcwd()}/tmp/session/{self.USERNAME}"):
+            self.instaloader_context.load_session_from_file(self.USERNAME, filename=f"{os.getcwd()}/tmp/session/{self.USERNAME}")  # se já tiver salvo antes
         else:
-            self.L.login(self.username, self.password)  # Vai fazer o login e manter a sessão
-            self.L.save_session_to_file(filename=f"{os.getcwd()}/tmp/session/{self.username}")
+            self.instaloader_context.login(self.USERNAME, self.PASSWORD)  # Vai fazer o login e manter a sessão
+            self.instaloader_context.save_session_to_file(filename=f"{os.getcwd()}/tmp/session/{self.USERNAME}")
         
         print("Instaloader carregado em:", time.time() - start)
 
         start = time.time()
 
-        self.client = genai.Client(api_key=self.API_KEY_GEMINI)
+        self.genai_client = genai.Client(api_key=self.API_KEY_GEMINI)
         self.google_search_tool = Tool(
             google_search = GoogleSearch()
         )

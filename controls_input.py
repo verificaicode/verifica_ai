@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai.types import GenerateContentConfig, File
 from google.genai.errors import ClientError
-from exceptions import VerificaAiException
-from utils import get_shortcode_from_url, get_img_index_from_url, get_final_urls, get_http_last_modified
-from structures import PostContent, PostType, ShareType, AttachmentMessageType
+from verifica_ai.verifica_ai.exceptions import VerificaAiException
+from verifica_ai.utils.content_processor import get_shortcode_from_url, get_img_index_from_url, get_final_urls, get_http_last_modified
+from verifica_ai.schemas.structures import PostContent, PostType, ShareType, AttachmentMessageType
 from datetime import datetime
 
 load_dotenv()

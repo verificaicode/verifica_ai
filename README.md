@@ -1,6 +1,6 @@
 # Verifica AI
 
-O Verifica AI é um sistema automatizado para análise e verificação de postagens do Instagram. Utilizando a API Gemini para inteligência artificial e a biblioteca Instaloader para coleta de dados, o projeto identifica a veracidade do conteúdo de acordo com os [**tipos de notícia**](#tipos-de-notícia) e fornece uma análise detalhada com fontes ordenadas por grau de confiança.
+&nbsp;&nbsp;&nbsp;&nbsp;O Verifica AI é um sistema automatizado para análise e verificação de postagens do Instagram. Utilizando a API Gemini para inteligência artificial e a biblioteca Instaloader para coleta de dados, o projeto identifica a veracidade do conteúdo de acordo com os [**tipos de notícia**](#tipos-de-notícia) e fornece uma análise detalhada com fontes ordenadas por grau de confiança.
 
 ---
 
@@ -54,29 +54,33 @@ O sistema identifica 7 tipos principais de notícia:
 ## Fluxograma
 ```mermaid
 flowchart TD
+    U1(User)
+    B(Verifica AI)
+    T1(Extrai texto)
+    T2(Extrai imagem, legenda, data)
+    T3(Extrai vídeo, legenda, data)
     EG(GEMINI)
     C1(Classificação 1)
+    D1{Fato ou Indeterminado?}
     C2(Classificação 2)
-    subgraph Decisões [ ]
-        direction LR
-        D1{Fato ou Indet.?}
-        D2{Desinformação?}
-    end
-    U1(User)
     U2(User)
-    U1 --> |mensagem| B(Verifica AI)
-    B --> |txt| T1(Extrai texto)
-    B --> |img| T2(Extrai imagem)
-    B --> |vid| T3(Extrai vídeo)
+
+    U1 --> |mensagem| B
+
+    B --> |texto| T1
+    B --> |imagem| T2
+    B --> |video| T3
+
     T1 --> |API| EG
     T2 --> |API| EG
     T3 --> |API| EG
+
     EG --> |modelo 1| C1
     C1 --> D1
-    C1 --> D2
-    D1 --> |modelo 2| C2
+
+    D1 --> |Sim| U2
+    D1 --> |Não: Desinformação| C2
     C2 --> U2
-    D2 --> U2
 
 %% class Text1 myStyle;
 
@@ -84,35 +88,30 @@ flowchart TD
 ```
 
 ### Descrição do fluxo
-**User:** Representa o usuário que envia a mensagem (pode conter texto, imagem ou vídeo).
 
-**Verifica AI (B):** Sistema responsável por identificar o tipo de conteúdo recebido:
+**Usuário:** Envia uma mensagem que pode conter texto, imagem ou vídeo.
 
-- **Se for texto:** envia para o módulo **T1**
-- **Se for imagem:** envia para o módulo **T2**
-- **Se for vídeo:** envia para o módulo **T3**
+**Verifica AI:** Recebe a mensagem e, de forma automática e transparente para o usuário, extrai os dados relevantes (texto, legenda, data, imagem ou vídeo) e os envia para análise.
 
-**T1, T2, T3:** Responsáveis por extrair as informações do conteúdo e enviá-las via API para o modelo de IA externo.
+**Análise com Inteligência Artificial (GEMINI):**
+A IA realiza uma classificação primária, identificando se o conteúdo é:
+- Fato
+- Indeterminado
+- Desinformação
 
-**GEMINI (EG):** Modelo externo que realiza a primeira análise (classificação primária).
+&nbsp;&nbsp;&nbsp;&nbsp;Se o conteúdo for fato ou indeterminado, o Verifica AI retorna imediatamente o resultado ao usuário.
 
-**Classificação 1 (C1):** Define se o conteúdo é fato, indeterminado ou desinformação.
+&nbsp;&nbsp;&nbsp;&nbsp;Se o conteúdo for classificado como desinformação, uma segunda análise é realizada para identificar o tipo específico de desinformação, entre as seguintes categorias:
 
-**Decisão D1:** Se for fato ou indeterminado, finaliza aqui.
+- Sátira ou paródia
+- Conexão falsa
+- Conteúdo enganoso
+- Contexto falso
+- Conteúdo impostor
+- Conteúdo manipulado
+- Conteúdo fabricado
 
-**Decisão D2:** Se for classificado como desinformação, ativa uma segunda etapa de classificação.
-
-**Classificação 2 (C2):** Detecta o tipo de desinformação, classificando entre:
-&nbsp;&nbsp;&nbsp;&nbsp;\- Sátira ou paródia
-&nbsp;&nbsp;&nbsp;&nbsp;\- Conexão falsa
-&nbsp;&nbsp;&nbsp;&nbsp;\- Conteúdo enganoso
-&nbsp;&nbsp;&nbsp;&nbsp;\- Contexto falso
-&nbsp;&nbsp;&nbsp;&nbsp;\- Conteúdo impostor
-&nbsp;&nbsp;&nbsp;&nbsp;\- Conteúdo manipulado
-&nbsp;&nbsp;&nbsp;&nbsp;\- Conteúdo fabricado
-
-**User (U2):** Exibe o resultado final ao usuário.
-
+&nbsp;&nbsp;&nbsp;&nbsp;Após essa etapa, o resultado final é enviado ao usuário, que vê apenas o diagnóstico final, sem ter acesso às etapas intermediárias.
 
 ---
 ## Diagrama de classes

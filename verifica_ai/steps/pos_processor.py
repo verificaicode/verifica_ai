@@ -75,5 +75,5 @@ class PosProcessor:
         ordenated_fonts = sorted(detalhed_fonts, key=lambda f: confiable_sites_dict[f["domain"]][1] if f["domain"] in confiable_sites_dict else 0, reverse=True)
         
         # Extrai apenas os URIs
-        return [f.uri for f in ordenated_fonts]
+        return [f["uri"] for f in ordenated_fonts]
         

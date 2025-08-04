@@ -36,7 +36,7 @@ class PosProcessor:
                 # Se ultrapassou, para antes de adicionar essa fonte
                 acc_fonts.pop()
                 break
-            formated_fonts = temp_formated
+            formated_fonts = "\n\nFontes:\n" + "\n\n".join(acc_fonts)
 
         return f"{response_text}{formated_fonts}"
     

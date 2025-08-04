@@ -1,14 +1,17 @@
+bs4==0.0.2
 dotenv==0.9.9
+eventlet==0.40.2
 Flask==3.1.0
 flask-cors==6.0.0
+flask-socketio==5.5.1
 google-genai==1.16.1
 instaloader==4.14.1
-Pillow==11.2.1
 python-dotenv==1.1.0
 python-socketio[client]==5.13.0
 requests==2.32.3
-scikit-learn==1.7.1
-numpy; platform_system == "Windows"
-numpy==1.26.4; platform_system == "Linux"
-tensorflow; platform_system == "Windows"
-tflite-runtime; platform_system == "Linux"
+# Pillow==11.2.1
+# scikit-learn==1.7.1
+# numpy; platform_system == "Windows"
+# numpy==1.26.4; platform_system == "Linux"
+# tensorflow; platform_system == "Windows"
+# tflite-runtime; platform_system == "Linux"

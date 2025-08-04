@@ -1,8 +1,25 @@
-from verifica_ai.schemas.types import ShareType, PostType
-from typing import Optional
 from dataclasses import dataclass
 import datetime
+from enum import Enum
+from typing import Optional
 import instaloader
+
+
+class ShareType(Enum):
+    NOT_SHARED = 0                  # Postagem original, não compartilhada
+    SHARED_VIA_APP = 1              # Compartilhada via aplicativo
+    SHARED_VIA_LINK = 2             # Compartilhada via link
+
+class PostType(Enum):
+    TEXT = 0,                       # Postagem do tipo texto
+    IMAGE = 1,                      # Postagem do tipo imagem
+    VIDEO = 2                       # Postagem do tipo video
+    MEDIA_TYPE_INDETERMINED = 3     # Postagem pode ser video ou imagem
+
+class AttachmentMessageType(Enum):
+    NEW_MESSAGE = 0                 # Um novo post será analisado
+    OLD_MESSAGE = 1                 # Um antigo post será analisado (por ser referenciado na mensagem atual)
+    NONE = 2                        # Não há post a ser analisado
 
 @dataclass
 class PostContent:
@@ -27,7 +44,10 @@ class PostContent:
         Objeto Instaloader contendo todas as informações sobre o post.
 
     file_src: str or None
-        Local onde está armazenado a mídia da postagem.
+        URL onde está armazenado a mídia da postagem.
+
+    filename: str or None
+        caminho da mídia localmente
 
     caption : str
         Texto da legenda da postagem.
@@ -53,6 +73,7 @@ class PostContent:
     shortcode: Optional[str]
     post: Optional[instaloader.Post]
     file_src: Optional[str]
+    filename: Optional[str]
     caption: str
     data: datetime
     object_if_is_old_message: Optional[dict]

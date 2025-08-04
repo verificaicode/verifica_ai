@@ -1,9 +1,9 @@
-from datetime import datetime
-
-from urllib.parse import parse_qs, urlparse
-import requests
-import urllib3
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from urllib.parse import parse_qs, urlparse
+import urllib3
+import requests
+from verifica_ai.types import PostType
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -78,6 +78,7 @@ def get_final_urls(font_urls: list[str]) -> list[str]:
     ])
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
+
     def fetch_url(url: str) -> str:
         try:
             response = requests.get(url, allow_redirects=True, verify=False, timeout=10)
@@ -90,9 +91,9 @@ def get_final_urls(font_urls: list[str]) -> list[str]:
 
     return final_urls
 
-def get_http_last_modified(url: str) -> datetime:
+def handle_reels_info(url: str) -> tuple[datetime, PostType]:
     """
-    Extrai a última data de modificação da mídia no servidor do instagram.
+    Extrai a data de publicação do reel e seu tipo (imagem ou video).
 
     Parâmetros
     ----------
@@ -101,10 +102,24 @@ def get_http_last_modified(url: str) -> datetime:
 
     Retorna
     -------
-    datetime
-        Um objeto datetime contendo a data requerida.
+    tuple[datetime, PostType]
+
+    Exemplo
+    -------
+    >>> handle_reels_info("https://www.instagram.com/123456789.mp4")
+    (datetime<03-08-2025>, PostType.VIDEO)
     """
 
     response = requests.head(url)
+
+    # Obtem a data de publicação do reel
     date_str = response.headers.get('Last-Modified')
-    return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S GMT")
+    if not date_str:
+        date_str = response.headers.get('Date')
+
+    # Obtem o tipo do reel
+    content_type = response.headers.get("Content-Type", "").lower()
+
+    post_type = PostType.VIDEO if "video" in content_type else PostType.IMAGE
+
+    return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S GMT"), post_type

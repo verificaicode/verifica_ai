@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="chat"></div>
+    <div id="send_message"></div>
+    <script>
+const socket = io();
+socket.on("connect", ()=>{
+
+console.log("conectado")
+socket.emit("message", JSON.stringify({
+    VERIFY_TOKEN: "s8NBYn9kspFIdBI9",
+    link: "https://www.instagram.com/reel/DL8Gv-uPJ5D/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
+}))
+socket.on("message", (message)=>{
+    console.log("message", message)
+})
+
+})
+    </script>
+</body>
+</html>

@@ -2,23 +2,24 @@ import asyncio
 import os
 from threading import Thread
 import time
-
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_cors import CORS
+from flask_socketio import SocketIO as ServerSocketIO
 import requests
-from socketio import Client
+from socketio import Client as ClientSocketIO
 from socketio.exceptions import ConnectionError
-
 from verifica_ai.app_context import AppContext
-from verifica_ai.gemini_response_generator import GeminiResponseGenerator
 from verifica_ai.input_handler import InputHandler
 from verifica_ai.verify_links import VerifyLinks
 
-
-class Server(AppContext, GeminiResponseGenerator, InputHandler, VerifyLinks):
+class Server(AppContext, InputHandler, VerifyLinks):
     def __init__(self):
+        asyncio.run(self.load_app())
+
+    async def load_app(self):
+        task = asyncio.create_task(self.run_flask_server())
+
         AppContext.__init__(self)
-        GeminiResponseGenerator.__init__(self)
         InputHandler.__init__(self)
         VerifyLinks.__init__(self)
 
@@ -26,14 +27,14 @@ class Server(AppContext, GeminiResponseGenerator, InputHandler, VerifyLinks):
 
         CORS(self.app)
 
-        self.io = Client()
+        self.io = ClientSocketIO()
+        self.socketio = ServerSocketIO(self.app, async_mode='eventlet')
 
         self.register_routes()
 
         self.connect_to_server()
 
-        asyncio.run(self.run_flask_server())
-
+        await task
     
     def connect_to_server(self):
         while True:
@@ -54,13 +55,26 @@ class Server(AppContext, GeminiResponseGenerator, InputHandler, VerifyLinks):
         print("Desconectado do servidor.")
         self.connect_to_server
 
+    def server_socketio_connection(self):
+        print("Conectado ao servidor.")
+
+    def server_socketio_message(self, message):
+        self.verify_socketio(message)
+
     def register_routes(self):
         self.io.on("connect", self.connect)
         self.io.on("disconnect", self.disconnect)
         self.io.on("webhook", self.webhook_socketio)
 
+        self.socketio.on_event("connection", self.server_socketio_connection)
+        self.socketio.on_event("message", self.server_socketio_message)
+
+        self.app.add_url_rule('/', view_func=self.home, methods=["GET"])
         self.app.add_url_rule('/webhook', view_func=self.webhook_flask, methods=["POST"])
         self.app.add_url_rule('/verify', view_func=self.verify_flask, methods=["POST"])
+
+    def home(self):
+        return send_file("public/index.html")
 
     def webhook_socketio(self, data):
         self.process_webhook_message(data)
@@ -81,7 +95,7 @@ class Server(AppContext, GeminiResponseGenerator, InputHandler, VerifyLinks):
                 pass
 
     def run_app_flask(self):
-            self.app.run("0.0.0.0", port=5000)
+            self.socketio.run(self.app, "0.0.0.0", port=5000)
     
     async def run_flask_server(self):
         try:

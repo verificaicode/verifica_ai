@@ -1,16 +1,10 @@
-import datetime
-
-from instaloader import Post
-from instaloader.exceptions import BadResponseException
 import requests
-
+import traceback
+from flask_socketio import emit
 from verifica_ai.exceptions import VerificaAiException
-from verifica_ai.schemas.structures import PostContent
-from verifica_ai.schemas.types import AttachmentMessageType, PostType, ShareType
-from verifica_ai.utils.content_processor import get_http_last_modified, get_shortcode_from_url
-from verifica_ai.content_processor.content_extractor import ContentExtractor
-from verifica_ai.content_processor.uploader import Uploader
-from verifica_ai.content_processor.response_processor import ResponseProcessor
+from verifica_ai.steps.pre_processor import PreProcessor
+from verifica_ai.steps.processor import Processor
+from verifica_ai.steps.pos_processor import PosProcessor
 
 class InputHandler():
     """
@@ -51,9 +45,9 @@ class InputHandler():
         message = messaging_event["message"]
         text = message["text"] if "text" in message else ""
 
-        self.process_input(sender_id, message, text)
+        self.process_input("instagram", sender_id, message, text)
 
-    def process_input(self, sender_id: int, message: dict, text: str) -> None:
+    def process_input(self, user_received: str, sender_id: int, message: dict, text: str) -> None:
         """
         Processa a mensagem do usuário, gerando análise e enviando resposta.
 
@@ -74,39 +68,77 @@ class InputHandler():
         -------
             None
         """
-        extractor = ContentExtractor(self.L, self.posts, self.generate_response)
-        uploader = Uploader(self.genai_client)
-        response_processor = ResponseProcessor(self.genai_client, self.models, self.content_categories, self.type_fake_name_classes)
 
-        self.send_message_to_user(sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
+        self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
 
         try:
-            post_content = extractor.get_content_object(sender_id, message, text)
-            final_response = response_processor.get_result_from_process(post_content)
-            if not post_content.object_if_is_old_message or (post_content.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
-                self.send_message_to_user(sender_id, final_response)
+            pre_processor_result = PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH).get_result(sender_id, message, text)
+            processor_result = Processor(self.genai_client, self.model, self.google_search_tool).get_result(pre_processor_result)
+            pos_processor_result = PosProcessor().get_result(processor_result)
+
+            if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
+                self.response_user(user_received, sender_id, pos_processor_result)
 
         # Tratamento de erros
         except VerificaAiException.InvalidLink:
-            self.send_message_to_user(sender_id, "Link inválido. Verifique-o e tente novamente.")
+            self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
             return
         
         except VerificaAiException.TypeUnsupported:
-            self.send_message_to_user(sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
+            self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
             return
         
         except VerificaAiException.GeminiQuotaExceeded:
-            self.send_message_to_user(sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
+            traceback.print_exc()
+            self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
             return
         
         except VerificaAiException.GraphAPIError as e:
-            print(e)
+            traceback.print_exc()
 
             # Caso a mensagem do usuário supere 2000 caracteres
             if e.args[0]["error"]["message"] == "Length of param message[text] must be less than or equal to 2000":
-                self.send_message_to_user(sender_id, "Mensagem muito longa. Envie até 2000 caracteres e tente novamente.")
+                self.response_user(user_received, sender_id, "Mensagem muito longa. Envie até 2000 caracteres e tente novamente.")
             
             # Caso a mensagem retornada pelo Gemini seja superior a 1000 caracteres
             else:
-                self.send_message_to_user(sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
+                self.response_user(user_received, sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
             return
+        
+    def response_user(self, user_received, sender_id, message_text):
+        if user_received == "instagram":
+            self.send_message_to_user_via_instagram(sender_id, message_text)
+
+        else:
+            self.send_message_to_user_via_site(sender_id, message_text)
+
+    def send_message_to_user_via_site(self, sender_id, message_text):
+        emit("message", message_text, boradcast=True)
+
+    def send_message_to_user_via_instagram(self, sender_id, message_text):
+        """
+            Envia mensagem para o usuário
+
+            Parâmetros
+            ----------
+            sender_id : number
+                Id do usuário para enviar a mensagem
+
+            message_text : str
+                Texto a ser enviado
+        """
+
+        url = "https://graph.instagram.com/v22.0/me/messages"
+        payload = {
+            "messaging_product": "instagram",
+            "recipient": {"id": sender_id},
+            "message": {"text": message_text}
+        }
+        headers = {
+            "Authorization": f"Bearer {self.PAGE_ACCESS_TOKEN}"
+        }
+        v = requests.post(url, headers=headers, json=payload).json()
+
+        # Verifica se ocorreu um erro ao tentar enviar a mensagem.
+        if "error" in v:
+            raise VerificaAiException.GraphAPIError(v)

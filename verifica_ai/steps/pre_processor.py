@@ -1,19 +1,20 @@
+import traceback
+from datetime import datetime
 from instaloader import Post
 from instaloader.exceptions import BadResponseException
 import requests
-from datetime import datetime
 from verifica_ai.exceptions import VerificaAiException
-from verifica_ai.schemas.structures import PostContent
-from verifica_ai.verifica_ai.types import AttachmentMessageType, PostType, ShareType
-from verifica_ai.verifica_ai.utils import get_http_last_modified, get_shortcode_from_url
+from verifica_ai.types import AttachmentMessageType, PostContent, PostType, ShareType
+from verifica_ai.utils import get_img_index_from_url, get_shortcode_from_url, handle_reels_info
 
-class ContentExtractor:
-    def __init__(self, instaloader_context, posts, generate_response_func):
+class PreProcessor:
+    def __init__(self, instaloader_context: Post, posts: dict, TEMP_PATH: str) -> None:
         self.instaloader_context = instaloader_context
         self.posts = posts
-        self.generate_response = generate_response_func
-
-    def get_content_object(self, sender_id: int, message: dict, text: str) -> PostContent:
+        self.TEMP_PATH = TEMP_PATH
+    
+    def get_result(self, sender_id: int, message: dict, text: str) -> PostContent:
+        # Se o tipo da mensgem não for suportado
         if "is_unsupported" in message:
             raise VerificaAiException.TypeUnsupported()
 
@@ -22,16 +23,18 @@ class ContentExtractor:
 
         if attachment_message_type == AttachmentMessageType.NONE:
             try:
+                # Se o texto da mensagem for o link de uma postagem:
                 if text.startswith("https://www.instagram.com/p/") or text.startswith("https://www.instagram.com/reel/"):
                     shortcode = get_shortcode_from_url(text)
                     post = Post.from_shortcode(self.instaloader_context.context, shortcode)
                     caption = post.caption or ""
                     post_content = PostContent(
-                        post_type=PostType.VIDEO if post.is_video else PostType.IMAGE,
+                        post_type=PostType.MEDIA_TYPE_INDETERMINED,
                         share_type=ShareType.NOT_SHARED,
                         shortcode=shortcode,
                         post=post,
                         file_src=None,
+                        filename=None,
                         caption=caption,
                         data=post.date,
                         object_if_is_old_message=None,
@@ -39,6 +42,8 @@ class ContentExtractor:
                         url=text,
                         text=None
                     )
+
+                # Se o texto da mensagem for o link de uma postagem compartilhada:
                 elif text.startswith("https://www.instagram.com/share/"):
                     response = requests.get(text, allow_redirects=True)
                     url = response.url
@@ -46,11 +51,12 @@ class ContentExtractor:
                     post = Post.from_shortcode(self.instaloader_context.context, shortcode)
                     caption = post.caption or ""
                     post_content = PostContent(
-                        post_type=PostType.VIDEO if post.is_video else PostType.IMAGE,
+                        post_type=PostType.MEDIA_TYPE_INDETERMINED,
                         share_type=ShareType.SHARED_VIA_LINK,
                         shortcode=shortcode,
                         post=post,
                         file_src=None,
+                        filename=None,
                         caption=caption,
                         data=post.date,
                         object_if_is_old_message=None,
@@ -58,15 +64,21 @@ class ContentExtractor:
                         url=text,
                         text=None
                     )
+
+                # Se o texto da mensagem não contiver link:
                 else:
-                    # Texto comum ou referindo postagem antiga
+                    # Se o usuário tiver enviado algum post anteriormente:
                     if sender_id in self.posts:
+                        # Prompt usado para identificar referência de posts na mensagem:
                         response_text, _ = self.generate_response([
                             f'Analise a mensagem: "{text}". Me retorne apenas "Sim" se a mensagem se refere a algo anterior, caso contrário "Não".'
                         ])
+
+                        # Se o texto da mensagem se referir a algum post enviado anteriormente:
                         if response_text.startswith("Sim"):
                             attachment_message_type = AttachmentMessageType.OLD_MESSAGE
                             self.posts[sender_id]["might_send_response_to_user"] = False
+
                         else:
                             post_content = PostContent(
                                 post_type=PostType.TEXT,
@@ -74,6 +86,7 @@ class ContentExtractor:
                                 shortcode=None,
                                 post=None,
                                 file_src=None,
+                                filename=None,
                                 caption="",
                                 data=datetime.now(),
                                 object_if_is_old_message=None,
@@ -88,6 +101,7 @@ class ContentExtractor:
                             shortcode=None,
                             post=None,
                             file_src=None,
+                            filename=None,
                             caption="",
                             data=datetime.now(),
                             object_if_is_old_message=None,
@@ -106,15 +120,17 @@ class ContentExtractor:
 
             message_type = self.posts[sender_id]["type"] if object_if_is_old_message else message["attachments"][0]["type"]
             file_src = self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
-            data = get_http_last_modified(file_src)
+            data, post_type = handle_reels_info(file_src)
 
+            # Se for um reels compartilhado pelo aplicativo:
             if message_type == "ig_reel":
                 post_content = PostContent(
-                    post_type=PostType.VIDEO,
+                    post_type=post_type,
                     share_type=ShareType.SHARED_VIA_APP,
                     shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else int(message["attachments"][0]["payload"]["reel_video_id"]),
                     post=None,
                     file_src=file_src,
+                    filename=None,
                     caption=self.posts[sender_id]["caption"] if object_if_is_old_message else message["attachments"][0]["payload"].get("title", ""),
                     data=data,
                     object_if_is_old_message=object_if_is_old_message,
@@ -122,6 +138,8 @@ class ContentExtractor:
                     url=None,
                     text=None
                 )
+
+            # Se for um video enviado da galeria:
             elif message_type == "video":
                 post_content = PostContent(
                     post_type=PostType.VIDEO,
@@ -129,6 +147,7 @@ class ContentExtractor:
                     shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
                     file_src=self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    filename=None,
                     caption="",
                     data=data,
                     object_if_is_old_message=object_if_is_old_message,
@@ -136,6 +155,8 @@ class ContentExtractor:
                     url=None,
                     text=None
                 )
+
+            # Se for uma imagem enviada da galeria
             else:
                 post_content = PostContent(
                     post_type=PostType.IMAGE,
@@ -143,6 +164,7 @@ class ContentExtractor:
                     shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
                     file_src=self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    filename=None,
                     caption="",
                     data=data,
                     object_if_is_old_message=object_if_is_old_message,
@@ -154,4 +176,107 @@ class ContentExtractor:
         if attachment_message_type == AttachmentMessageType.NEW_MESSAGE:
             self.posts[sender_id] = post_content
 
+        # Se for video ou imagem:
+        if post_content.post_type in [ PostType.IMAGE, PostType.VIDEO, PostType.MEDIA_TYPE_INDETERMINED ]: 
+            filename, post_type = self.handle_post_file(post_content)
+            post_content.filename = filename
+            post_content.post_type = post_type
+            
         return post_content
+
+    def handle_post_file(self, post_content: PostContent) -> str:
+        """
+        Baixa a postagem e extrai seus dados. 
+        Parâmetros
+        ----------
+        post_content: PostContent
+            PostContent contendo os dados da postagem
+
+        Retorna
+        tuple[str, PostType]
+            Uma tupla contendo o caminho do arquivo local e o tipo da postagem
+        """
+        
+        share_type = post_content.share_type
+        post_type = post_content.post_type
+
+        try:  
+            shortcode = post_content.shortcode
+            filename = None
+
+            # Se for uma postagem compartilhada pelo aplicativo do tipo video ou um video enviado pela galeria
+            if share_type == ShareType.SHARED_VIA_APP or post_type == PostType.VIDEO:
+                response = requests.get(post_content.file_src, stream=True)
+
+                if post_type == PostType.VIDEO:
+                    filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.mp4"
+
+                else:
+                    filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.jpg"
+
+                with open(filename, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+
+                return filename, post_type
+                
+            else:
+                self.instaloader_context.download_post(post_content.post, target=self.TEMP_PATH)
+
+                post = None
+                sufix = "s1"
+
+                # Se for uma postagem com multiplas mídias
+                multimidia = post_content.post.typename == 'GraphSidecar'
+
+                if multimidia:
+
+                    # Obtém todos os posts da postagem
+                    posts = list(post_content.post.get_sidecar_nodes())
+
+                    # Pega o indice da mídia no qual o usuário compartilhou o link
+                    img_index = get_img_index_from_url(post_content.url) - 1
+                    
+                    # Se existir uma postagem para o indice obtido
+                    if img_index < len(posts):
+                        # Mídia do link
+                        post = posts[img_index]
+                        sufix = f"_m{img_index}"
+
+                    else:
+                        raise VerificaAiException.InvalidLink()
+
+                else:
+                    post = post_content.post
+
+                url = post.url
+
+                response = requests.get(url)
+
+                # Verifica se a imagem foi baixada com sucesso
+                if response.status_code == 200:
+                    if post.is_video:
+                        filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.mp4"
+                        post_type = PostType.VIDEO
+                    
+                    else:
+                        filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.jpg"
+                        post_type = PostType.IMAGE
+
+                    with open(filename, "wb") as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+
+                    return filename, post_type
+                
+                else:
+                    raise VerificaAiException.InvalidLink()
+
+        except Exception as e:
+            traceback.print_exc()
+
+        # Repassa o erro para o tratamento de erros principal
+        except VerificaAiException.InvalidLink():
+            raise VerificaAiException.InvalidLink()

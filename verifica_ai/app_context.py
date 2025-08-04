@@ -1,21 +1,18 @@
+
+import eventlet
+eventlet.monkey_patch()
 import os
 import time
-
 from dotenv import load_dotenv
 from google import genai
-from google.genai.types import Tool, GoogleSearch
+from google.genai.types import GoogleSearch,  Tool
 import instaloader
-
-# from verifica_ai.models import Models
-
 
 # Carrega variáveis de ambiente
 load_dotenv()
 
 class AppContext():
     def __init__(self):
-        # self.models = Models()
-        self.models = {}
         self.posts = {}
 
         # Definição de constantes
@@ -32,7 +29,7 @@ class AppContext():
         start = time.time()
 
         self.instaloader_context = instaloader.Instaloader(
-            filename_pattern="vl_{shortcode}",
+            filename_pattern="vl_{shortcode}_s1",
             dirname_pattern=self.TEMP_PATH,
             download_videos=True,
             download_video_thumbnails=True,
@@ -70,7 +67,7 @@ class AppContext():
         ]
 
 
-        self.model = "gemini-2.0-flash"
+        self.model = "gemini-2.0-flash-lite"
                 
         #models:
             # gemini-1.5-flash

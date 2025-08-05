@@ -1,25 +1,64 @@
 from dataclasses import dataclass
-import datetime
+from datetime import datetime
 from enum import Enum
 from typing import Optional
 import instaloader
 
+class AttachmentMessageType(Enum):
+    """
+    Tipo de análise de mensagem com anexo.
 
-class ShareType(Enum):
-    NOT_SHARED = 0                  # Postagem original, não compartilhada
-    SHARED_VIA_APP = 1              # Compartilhada via aplicativo
-    SHARED_VIA_LINK = 2             # Compartilhada via link
+    - NEW_MESSAGE: Um novo post será analisado
+    - OLD_MESSAGE: Um antigo post será analisado (referência na mensagem atual)
+    - NONE: Não há post a ser analisado
+    """
+
+    NEW_MESSAGE = 0
+    OLD_MESSAGE = 1
+    NONE = 2
 
 class PostType(Enum):
-    TEXT = 0,                       # Postagem do tipo texto
-    IMAGE = 1,                      # Postagem do tipo imagem
-    VIDEO = 2                       # Postagem do tipo video
-    MEDIA_TYPE_INDETERMINED = 3     # Postagem pode ser video ou imagem
+    """
+    Tipos de conteúdo de um post.
 
-class AttachmentMessageType(Enum):
-    NEW_MESSAGE = 0                 # Um novo post será analisado
-    OLD_MESSAGE = 1                 # Um antigo post será analisado (por ser referenciado na mensagem atual)
-    NONE = 2                        # Não há post a ser analisado
+    - TEXT: Postagem do tipo texto
+    - IMAGE: Postagem do tipo imagem
+    - VIDEO: Postagem do tipo vídeo
+    - MEDIA_TYPE_INDETERMINED: Pode ser vídeo ou imagem (não foi possível determinar)
+    """
+
+    TEXT = 0
+    IMAGE = 1
+    VIDEO = 2
+    MEDIA_TYPE_INDETERMINED = 3
+
+class ShareType(Enum):
+    """
+    Tipos de compartilhamento de um post.
+
+    - NOT_SHARED: Postagem original, não compartilhada
+    - SHARED_VIA_APP: Compartilhada via aplicativo
+    - SHARED_VIA_LINK: Compartilhada via link
+    """
+
+    NOT_SHARED = 0
+    SHARED_VIA_APP = 1
+    SHARED_VIA_LINK = 2
+
+@dataclass
+class DetalhedFont:
+    """
+    Representa uma fonte com mais detalhes.
+
+    :param uri: Uri completa da fonte.
+    :type uri: str
+
+    :param domain: Domínio da fonte.
+    :type domain: str
+    """
+
+    uri: str
+    domain: str
 
 @dataclass
 class PostContent:
@@ -29,43 +68,41 @@ class PostContent:
     A estrutura encapsula informações relevantes como identificação, mídia associada,
     legenda, data da postagem e outras flags que indicam o tipo de conteúdo.
 
-    Atributos
-    ---------
-    post_type: PostType
-        Tipo da postagem.
+    :param post_type: Tipo da postagem.
+    :type post_type: PostType
     
-    share_type: ShareType
-        Tipo de compartilhamento da postagem.
-        
-    shortcode : str or None
-        Código único da postagem no Instagram.
+    :param share_type: Tipo de compartilhamento da postagem.
+    :type share_type: ShareType
 
-    post : instaloader.Post or None
-        Objeto Instaloader contendo todas as informações sobre o post.
+    :param shortcode: Código único da postagem no Instagram.
+    :type shortcode: str or None
 
-    file_src: str or None
-        URL onde está armazenado a mídia da postagem.
+    :param post: Objeto Instaloader contendo todas as informações sobre o post.
+    :type post: instaloader.Post or None
 
-    filename: str or None
-        caminho da mídia localmente
+    :param file_src: URL onde está armazenado a mídia da postagem.
+    :type file_src: str or None
 
-    caption : str
-        Texto da legenda da postagem.
+    :param filename: Caminho da mídia localmente.
+    :type filename: str or None
 
-    data : datetime
-        Data da publicação da postagem.
+    :param caption: Texto da legenda da postagem.
+    :type caption: str
 
-    object_if_is_old_message : dict or None
-        Se a mensagem atual se referir a algum post anterior, contém um dicionário com os dados desse post.
+    :param data: Data da publicação da postagem.
+    :type data: datetime
 
-    might_send_response_to_user : bool
-        Flag usada internamente para permitir se a resposta pode ser enviada para o usuário. Se for enviado um post e em seguida uma mensagem que se refere ao post, a resposta ao post será ignorada.
-    
-    url : str or None
-        URL da postagem original.
-    
-    text : str or None
-        Texto da mensagem enviada pelo usuário.
+    :param object_if_is_old_message: Se a mensagem atual se referir a algum post anterior, contém um dicionário com os dados desse post.
+    :type object_if_is_old_message: dict or None
+
+    :param might_send_response_to_user: Flag usada internamente para permitir se a resposta pode ser enviada para o usuário. Se for enviado um post e em seguida uma mensagem que se refere ao post, a resposta ao post será ignorada.
+    :type might_send_response_to_user: bool
+
+    :param url: URL da postagem original.
+    :type url: str or None
+
+    :param text: Texto da mensagem enviada pelo usuário.
+    :type text: str or None
     """
         
     post_type: PostType

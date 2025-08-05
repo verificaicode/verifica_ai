@@ -1,6 +1,3 @@
-
-import eventlet
-eventlet.monkey_patch()
 import os
 import time
 from dotenv import load_dotenv

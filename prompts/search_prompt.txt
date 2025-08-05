@@ -1,0 +1,7 @@
+{label}: "{caption}",
+Seu objetivo é fazer pesquisas que servirão para determinar a veracidade do conteúdo informado (texto ou legenda (e arquivo, se houver)).
+1. Separe o conteúdo em temas que podem concluir esse objetivo.
+2. Para cada tema, realize pesquisas em fontes confiávais.
+3. Responda somente com um JSON no seguinte formato:
+{{"tema1": ["resultado de uma pesquisa", "resultado de outra pesquisa"], "tema2": ["..."]}}
+Não adicione nenhuma explicação ou comentário fora do JSON.

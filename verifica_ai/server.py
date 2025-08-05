@@ -1,13 +1,12 @@
 import asyncio
-import os
-from threading import Thread
 import time
-from flask import Flask, request, send_file
-from flask_cors import CORS
-from flask_socketio import SocketIO as ServerSocketIO
-import requests
-from socketio import Client as ClientSocketIO
+import httpx
+from quart import Quart, request, send_file
+from quart_cors import cors
+from socketio import ASGIApp, AsyncServer
+from socketio import AsyncClient as AsyncClientSocketIO
 from socketio.exceptions import ConnectionError
+import uvicorn
 from verifica_ai.app_context import AppContext
 from verifica_ai.input_handler import InputHandler
 from verifica_ai.verify_links import VerifyLinks
@@ -16,47 +15,57 @@ class Server(AppContext, InputHandler, VerifyLinks):
     def __init__(self):
         asyncio.run(self.load_app())
 
+
     async def load_app(self):
-        task = asyncio.create_task(self.run_flask_server())
+        task = asyncio.create_task(self.main())
 
         AppContext.__init__(self)
         InputHandler.__init__(self)
         VerifyLinks.__init__(self)
 
-        self.app = Flask(__name__)
+        app = Quart(__name__)
 
-        CORS(self.app)
+        cors(app)
 
-        self.io = ClientSocketIO()
-        self.socketio = ServerSocketIO(self.app, async_mode='eventlet')
+        self.io = AsyncClientSocketIO()
+        self.socketio = AsyncServer(
+            async_mode='asgi',
+            cors_allowed_origins='*',
+            ping_interval = 5,
+            ping_timeout = 3
+        )
+        self.app = Quart(__name__)
+        self.asgi_app = ASGIApp(self.socketio, self.app)
 
         self.register_routes()
 
-        self.connect_to_server()
+        await self.connect_to_server()
 
-        await task
-    
-    def connect_to_server(self):
+    async def connect_to_server(self):
         while True:
             try:
-                self.io.connect(self.VERIFICA_AI_PROXY)
-                time.sleep(1)
+                await self.io.connect(self.VERIFICA_AI_PROXY, auth={
+                    "token": self.VERIFY_TOKEN
+                })
+
             # Erro ao tentar se conectar com o servidor
             except ConnectionError:
-                pass
+                await asyncio.sleep(0.5)
 
             else:
                 break
 
+        await self.io.wait()
+
     def connect(self):
         print("Conectado ao servidor.")
 
-    def disconnect(self):
+    async def disconnect(self):
         print("Desconectado do servidor.")
-        self.connect_to_server
+        await self.connect_to_server()
 
     def server_socketio_connection(self):
-        print("Conectado ao servidor.")
+        print("novo cliente conectado.")
 
     def server_socketio_message(self, message):
         self.verify_socketio(message)
@@ -66,8 +75,8 @@ class Server(AppContext, InputHandler, VerifyLinks):
         self.io.on("disconnect", self.disconnect)
         self.io.on("webhook", self.webhook_socketio)
 
-        self.socketio.on_event("connection", self.server_socketio_connection)
-        self.socketio.on_event("message", self.server_socketio_message)
+        self.socketio.on("connection", self.server_socketio_connection)
+        self.socketio.on("message", self.server_socketio_message)
 
         self.app.add_url_rule('/', view_func=self.home, methods=["GET"])
         self.app.add_url_rule('/webhook', view_func=self.webhook_flask, methods=["POST"])
@@ -76,33 +85,29 @@ class Server(AppContext, InputHandler, VerifyLinks):
     def home(self):
         return send_file("public/index.html")
 
-    def webhook_socketio(self, data):
-        self.process_webhook_message(data)
+    async def webhook_socketio(self, data):
+        await self.process_webhook_message(data)
 
-    def webhook_flask(self):
-        self.process_webhook_message(request.get_json())
+    async def webhook_flask(self):
+        await self.process_webhook_message(await request.get_json())
 
         return "", 200
 
-    async def loop(self):
+    async def keep_alive_loop(self):
         while True:
             await asyncio.sleep(10)
             try:
-                if not self.DEBUG:
-                    requests.get(self.VERIFICA_AI_SERVER)
-            except Exception as e:
-                print(e)
+                async with httpx.AsyncClient() as client:
+                    await client.get(self.VERIFICA_AI_SERVER)
+            except:
                 pass
 
-    def run_app_flask(self):
-            self.socketio.run(self.app, "0.0.0.0", port=5000)
-    
-    async def run_flask_server(self):
-        try:
-            flask_thread = Thread(target=self.run_app_flask)
-            flask_thread.daemon = True
-            flask_thread.start()
-            self.loop_task = asyncio.create_task(self.loop())
-            await self.loop_task
-        except asyncio.CancelledError:
-            os._exit(0)
+    # Inicializa tudo no modo assíncrono
+    async def main(self):
+        # Cria a tarefa do loop de keep-alive
+        loop_task = asyncio.create_task(self.keep_alive_loop())
+
+        # Configura e inicia o servidor Uvicorn
+        config = uvicorn.Config(app=self.asgi_app, host="0.0.0.0", port=5000)
+        server = uvicorn.Server(config)
+        await server.serve()

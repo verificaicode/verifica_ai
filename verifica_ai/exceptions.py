@@ -4,6 +4,10 @@ from instaloader.exceptions import BadResponseException
 class VerificaAiException:
     "Tratamento de erros"
 
+    class InternalError(Exception):
+        "Erro interno"
+        pass
+
     class TypeUnsupported(Exception):
         "Tipo de post insuportado"
         pass

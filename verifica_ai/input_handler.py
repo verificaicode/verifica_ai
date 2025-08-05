@@ -14,7 +14,7 @@ class InputHandler():
     extrai conteúdos, processa a análise e envia resposta para o usuário.
     """
 
-    def process_webhook_message(self, data: dict) -> None:
+    async def process_webhook_message(self, data: dict) -> None:
         """
         Recebe a mensagem bruta da Graph API e inicia seu processamento.
 
@@ -45,9 +45,9 @@ class InputHandler():
         message = messaging_event["message"]
         text = message["text"] if "text" in message else ""
 
-        self.process_input("instagram", sender_id, message, text)
+        await self.process_input("instagram", sender_id, message, text)
 
-    def process_input(self, user_received: str, sender_id: int, message: dict, text: str) -> None:
+    async def process_input(self, user_received: str, sender_id: int, message: dict, text: str) -> None:
         """
         Processa a mensagem do usuário, gerando análise e enviando resposta.
 
@@ -72,14 +72,17 @@ class InputHandler():
         self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
 
         try:
-            pre_processor_result = PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH).get_result(sender_id, message, text)
-            processor_result = Processor(self.genai_client, self.model, self.google_search_tool).get_result(pre_processor_result)
+            pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH).get_result(sender_id, message, text)
+            processor_result = await Processor(self.genai_client, self.model, self.google_search_tool).get_result(pre_processor_result)
             pos_processor_result = PosProcessor().get_result(processor_result)
 
             if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
                 self.response_user(user_received, sender_id, pos_processor_result)
 
         # Tratamento de erros
+        except VerificaAiException.InternalError:
+            self.response_user(user_received, sender_id, "Ocorreu um erro ao processar a mensagem. Tente novamente mais tarde.")
+
         except VerificaAiException.InvalidLink:
             self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
             return
@@ -113,19 +116,15 @@ class InputHandler():
             self.send_message_to_user_via_site(sender_id, message_text)
 
     def send_message_to_user_via_site(self, sender_id, message_text):
-        emit("message", message_text, boradcast=True)
+        self.socketio.emit("message", message_text, boradcast=True)
 
-    def send_message_to_user_via_instagram(self, sender_id, message_text):
+    def send_message_to_user_via_instagram(self, sender_id: int, message_text: str):
         """
             Envia mensagem para o usuário
 
-            Parâmetros
-            ----------
-            sender_id : number
-                Id do usuário para enviar a mensagem
+            :param sender_id: Id do usuário para enviar a mensagem
 
-            message_text : str
-                Texto a ser enviado
+            :param message_text: Texto a ser enviado
         """
 
         url = "https://graph.instagram.com/v22.0/me/messages"

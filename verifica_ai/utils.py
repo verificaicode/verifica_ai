@@ -1,9 +1,10 @@
-from concurrent.futures import ThreadPoolExecutor
+import asyncio
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 import urllib3
-import requests
+import httpx
 from verifica_ai.types import PostType
+from verifica_ai.exceptions import VerificaAiException
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -11,15 +12,9 @@ def get_shortcode_from_url(url: str) -> str:
     """
     Extrai o shortcode (identificador único de uma postagem no Instagram) a partir de uma URL.
 
-    Parâmetros
-    ----------
-    url : str
-        URL da postagem do Instagram da qual o shortcode será extraído.
+    :param url: URL da postagem do Instagram da qual o shortcode será extraído.
 
-    Retorna
-    -------
-    str
-        Shortcode da postagem extraído da URL.
+    :return: Shortcode da postagem extraído da URL.
     
     Exemplo
     -------
@@ -35,15 +30,9 @@ def get_img_index_from_url(url: str) -> int:
     """
     Extrai o parâmetro img_index de uma url
 
-    Parâmetros
-    ----------
-    url : str
-        URL utilizada para extrair o img_index.
+    :param url: URL utilizada para extrair o img_index.
     
-    Retorna
-    -------
-    int
-        Retorna o img_index obtido.
+    :return: Retorna o img_index obtido.
 
     Exemplo
     -------
@@ -56,19 +45,15 @@ def get_img_index_from_url(url: str) -> int:
 
     return img_index
 
-def get_final_urls(font_urls: list[str]) -> list[str]:
+async def get_final_urls(font_urls: list[str]) -> list[str]:
     """
     Segue redirecionamentos HTTP e retorna a URL final de cada fonte.
 
-    Parâmetros
-    ----------
-    font_urls : list of str
-        Lista de URLs de fontes (ou arquivos) a serem verificadas.
+    :param font_urls: Lista de URLs de fontes (ou arquivos) a serem verificadas.
 
-    Retorna
-    -------
-    list of str
-        Lista com as URLs finais após redirecionamento (ou mensagens de erro).
+    :return: Lista com as URLs finais após redirecionamento (ou mensagens de erro).
+
+    :raise VerificaAiException.InternalError: Erro interno ao executar a função
 
     Exemplo
     -------
@@ -79,35 +64,47 @@ def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
-    def fetch_url(url: str) -> str:
-        try:
-            response = requests.get(url, allow_redirects=True, verify=False, timeout=10)
-            return response.url
-        except Exception as e:
-            return f"Erro: {e}"
+    timeout = httpx.Timeout(10.0, connect=5.0)
+    limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
 
-    with ThreadPoolExecutor() as executor:
-        final_urls = list(executor.map(fetch_url, font_urls))
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        verify=False,
+        timeout=timeout,
+        limits=limits
+    ) as client:
 
-    return final_urls
+        async def fetch_url(url: str) -> str:
+            try:
+                response = await client.get(url)
+                # Retorna a URL final como string
+                return str(response.url)
+            
+            except httpx.RequestError:
+                raise VerificaAiException.InternalError()
+            
+            except Exception:
+                raise VerificaAiException.InternalError()
 
-def handle_reels_info(url: str) -> tuple[datetime, PostType]:
+        # Dispara todas as requisições em paralelo
+        results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
+
+    return results
+
+def handle_reel_info(url: str) -> tuple[datetime, PostType]:
     """
-    Extrai a data de publicação do reel e seu tipo (imagem ou video).
+    Extrai informações do reel.
 
     Parâmetros
     ----------
-    url : str
-        URL da mídia
+    :param url: URL da mídia
 
-    Retorna
-    -------
-    tuple[datetime, PostType]
+    :return: Retorna uma tupla contendo um `datetime` com a data de publicação do reel e `PostType` com o tipo do reel (imagem ou vídeo).
 
     Exemplo
     -------
-    >>> handle_reels_info("https://www.instagram.com/123456789.mp4")
-    (datetime<03-08-2025>, PostType.VIDEO)
+    >>> handle_reel_info("https://www.instagram.com/123456789.mp4")
+    (datetime, PostType.VIDEO)
     """
 
     response = requests.head(url)
@@ -123,3 +120,24 @@ def handle_reels_info(url: str) -> tuple[datetime, PostType]:
     post_type = PostType.VIDEO if "video" in content_type else PostType.IMAGE
 
     return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S GMT"), post_type
+
+def insert_into_prompt(prompt: str, values: dict[str, str]) -> str:
+    """
+    Insere dados no prompt.
+
+    :param prompt: Prompt que receberá os dados.
+
+    :param values: Valores a serem adicionados no prompt.
+
+    :return: O novo prompt com os dados inseridos.
+
+    Exemplo
+    -------
+    >>> insert_into_prompt(
+    ...     "Hoje é {data_atual}, qual a data de amanhã?",
+    ...     { "data_atual": "05 de agosto de 2025" }
+    )
+    'Hoje é 05 de agosto de 2025, qual a data de amanhã?'
+    """
+
+    return prompt.format(**values)

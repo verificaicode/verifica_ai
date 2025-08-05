@@ -1,27 +1,25 @@
 
+from verifica_ai.types import DetalhedFont
+
 class PosProcessor:
     def get_result(self, response: tuple[str, list[str]]) -> str:
         response_text, fonts = response
+
+        fonts = self.order_by_confiability(fonts)
+
         return self.process_response(response_text, fonts)
-            
+
     def process_response(self, response_text: str, detalhed_fonts: list[dict[str, str]]) -> str:
         """
         Processa a resposta gerada pelo Gemini.
 
-        Garante que a resopsta final não ultrapasse 1000 caracteres, colocando o máximo de fontes possível que não ultrapasse o limite.
+        Garante que a resposta final não ultrapasse 1000 caracteres, colocando o máximo de fontes possível que não ultrapasse o limite.
         
-        Parâmetros
-        ----------
-        response_text : str
-            Resposta bruta retornada pelo Gemini.
+        :param response_text: Resposta bruta retornada pelo Gemini.
 
-        fonts: list of str
-            Uma lista contendo as fontes utilizadas para as pesquisas acerca do conteúdo da mensagem.
+        :param fonts: Uma lista contendo as fontes utilizadas para as pesquisas acerca do conteúdo da mensagem.
 
-        Retorna
-        -------
-        response_text : str
-            String contendo a explicação e suas fontes.
+        :return response_text: String contendo a explicação e suas fontes.
         """
 
         fonts = self.order_by_confiability(detalhed_fonts)
@@ -31,16 +29,24 @@ class PosProcessor:
 
         for font in fonts:
             acc_fonts.append(font)
-            temp_formated = "\n\nFontes:\n" + "\n\n".join(acc_fonts)
+            temp_formated = "\nFontes:\n" + "\n\n".join(acc_fonts)
             if len(f"{response_text}{temp_formated}") > 1000:
                 # Se ultrapassou, para antes de adicionar essa fonte
                 acc_fonts.pop()
                 break
-            formated_fonts = "\n\nFontes:\n" + "\n\n".join(acc_fonts)
+            formated_fonts = "\nFontes:\n" + "\n\n".join(acc_fonts)
 
         return f"{response_text}{formated_fonts}"
     
-    def  order_by_confiability(self, detalhed_fonts: list[dict[str, str]]) -> list[str]:
+    def order_by_confiability(self, detalhed_fonts: list[DetalhedFont]) -> list[str]:
+        """
+        Ordena as fontes por confiabilidade.
+
+        :param detalhed_fonts: Uma lista contendo `DetalhedFont` que será processada.
+
+        :return: Uma lista ordenada contendo URIs ordenadas por confiabilidade.
+        """
+
         confiable_sites_dict = {
             "weather.com": ["The Weather Channel", 1.00],
             "bbc.com": ["BBC", 0.95],
@@ -71,9 +77,9 @@ class PosProcessor:
             "r7.com": ["R7 Notícias", 0.80],
             "foxnews.com": ["Fox News", 0.75]
         }
-        print(detalhed_fonts)
-        ordenated_fonts = sorted(detalhed_fonts, key=lambda f: confiable_sites_dict[f["domain"]][1] if f["domain"] in confiable_sites_dict else 0, reverse=True)
+
+        ordenated_fonts = sorted(detalhed_fonts, key=lambda f: confiable_sites_dict[f.domain][1] if f.domain in confiable_sites_dict else 0, reverse=True)
         
         # Extrai apenas os URIs
-        return [f["uri"] for f in ordenated_fonts]
+        return [f.uri for f in ordenated_fonts]
         

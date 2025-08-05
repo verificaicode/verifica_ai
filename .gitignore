@@ -7,4 +7,4 @@ tmp/files/
 registro/hash.txt
 registro/verifica_ai.zip
 
-__pycache__
+**/__pycache__/

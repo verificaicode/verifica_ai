@@ -82,8 +82,6 @@ class Processor():
 
             prompt_parts = [prompt_text]
 
-            print(prompt_text)
-
             if is_media:
                 prompt_parts.append(file)
 

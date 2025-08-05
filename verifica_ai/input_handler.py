@@ -1,6 +1,5 @@
 import requests
 import traceback
-from flask_socketio import emit
 from verifica_ai.exceptions import VerificaAiException
 from verifica_ai.steps.pre_processor import PreProcessor
 from verifica_ai.steps.processor import Processor
@@ -69,7 +68,7 @@ class InputHandler():
             None
         """
 
-        self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
+        await self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
 
         try:
             pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH).get_result(sender_id, message, text)
@@ -77,23 +76,23 @@ class InputHandler():
             pos_processor_result = PosProcessor().get_result(processor_result)
 
             if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
-                self.response_user(user_received, sender_id, pos_processor_result)
+                await self.response_user(user_received, sender_id, pos_processor_result)
 
         # Tratamento de erros
         except VerificaAiException.InternalError:
-            self.response_user(user_received, sender_id, "Ocorreu um erro ao processar a mensagem. Tente novamente mais tarde.")
+            await self.response_user(user_received, sender_id, "Ocorreu um erro ao processar a mensagem. Tente novamente mais tarde.")
 
         except VerificaAiException.InvalidLink:
-            self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
+            await self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
             return
         
         except VerificaAiException.TypeUnsupported:
-            self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
+            await self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
             return
         
         except VerificaAiException.GeminiQuotaExceeded:
             traceback.print_exc()
-            self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
+            await self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
             return
         
         except VerificaAiException.GraphAPIError as e:
@@ -101,22 +100,22 @@ class InputHandler():
 
             # Caso a mensagem do usuário supere 2000 caracteres
             if e.args[0]["error"]["message"] == "Length of param message[text] must be less than or equal to 2000":
-                self.response_user(user_received, sender_id, "Mensagem muito longa. Envie até 2000 caracteres e tente novamente.")
+                await self.response_user(user_received, sender_id, "Mensagem muito longa. Envie até 2000 caracteres e tente novamente.")
             
             # Caso a mensagem retornada pelo Gemini seja superior a 1000 caracteres
             else:
-                self.response_user(user_received, sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
+                await self.response_user(user_received, sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
             return
         
-    def response_user(self, user_received, sender_id, message_text):
+    async def response_user(self, user_received, sender_id, message_text):
         if user_received == "instagram":
             self.send_message_to_user_via_instagram(sender_id, message_text)
 
         else:
-            self.send_message_to_user_via_site(sender_id, message_text)
+            await self.send_message_to_user_via_site(sender_id, message_text)
 
-    def send_message_to_user_via_site(self, sender_id, message_text):
-        self.socketio.emit("message", message_text, boradcast=True)
+    async def send_message_to_user_via_site(self, sender_id, message_text):
+        await self.socketio.emit("message", message_text)
 
     def send_message_to_user_via_instagram(self, sender_id: int, message_text: str):
         """

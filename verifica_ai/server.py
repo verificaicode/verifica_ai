@@ -39,7 +39,11 @@ class Server(AppContext, InputHandler, VerifyLinks):
 
         self.register_routes()
 
-        await self.connect_to_server()
+        if self.DEBUG:
+            await self.connect_to_server()
+            
+        else:
+            await task
 
     async def connect_to_server(self):
         while True:

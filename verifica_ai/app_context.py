@@ -64,7 +64,7 @@ class AppContext():
         ]
 
 
-        self.model = "gemini-2.0-flash-lite"
+        self.model = "gemini-2.0-flash"
                 
         #models:
             # gemini-1.5-flash

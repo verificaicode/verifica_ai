@@ -4,6 +4,7 @@ from verifica_ai.exceptions import VerificaAiException
 from verifica_ai.steps.pre_processor import PreProcessor
 from verifica_ai.steps.processor import Processor
 from verifica_ai.steps.pos_processor import PosProcessor
+from verifica_ai.handle_gemini_api import HandleGeminiAPI
 
 class InputHandler():
     """
@@ -71,8 +72,9 @@ class InputHandler():
         await self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
 
         try:
-            pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH).get_result(sender_id, message, text)
-            processor_result = await Processor(self.genai_client, self.model, self.google_search_tool).get_result(pre_processor_result)
+            handle_gemini_api = HandleGeminiAPI(self.genai_client, self.model, self.google_search_tool)
+            pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH, handle_gemini_api).get_result(sender_id, message, text)
+            processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
             pos_processor_result = PosProcessor().get_result(processor_result)
 
             if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):

@@ -3,6 +3,7 @@ from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 import urllib3
 import httpx
+import traceback
 from verifica_ai.types import PostType
 from verifica_ai.exceptions import VerificaAiException
 
@@ -16,7 +17,7 @@ def get_shortcode_from_url(url: str) -> str:
 
     :return: Shortcode da postagem extraído da URL.
     
-    Exemplo
+    Examples
     -------
     >>> get_shortcode_from_url("https://www.instagram.com/p/ABC123xyz/")
     'ABC123xyz'
@@ -34,7 +35,7 @@ def get_img_index_from_url(url: str) -> int:
     
     :return: Retorna o img_index obtido.
 
-    Exemplo
+    Examples
     -------
     >>> get_img_index_from_url("https://www.instagram.com/p/ABC123xyz?img_index=3")
     3
@@ -55,7 +56,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
 
     :raise VerificaAiException.InternalError: Erro interno ao executar a função
 
-    Exemplo
+    Examples
     -------
     >>> get_final_urls([
     ...     "https://bit.ly/3GdX7rK",                # → https://www.python.org
@@ -64,7 +65,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
-    timeout = httpx.Timeout(10.0, connect=5.0)
+    timeout = httpx.Timeout(3.0, connect=2.0)
     limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
 
     async with httpx.AsyncClient(
@@ -77,37 +78,47 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
         async def fetch_url(url: str) -> str:
             try:
                 response = await client.get(url)
+
                 # Retorna a URL final como string
                 return str(response.url)
             
+            except httpx.ReadTimeout:
+                return ""
+            
+            except httpx.ConnectTimeout:
+                return ""
+            
             except httpx.RequestError:
+                traceback.print_exc()
                 raise VerificaAiException.InternalError()
             
             except Exception:
+                traceback.print_exc()
                 raise VerificaAiException.InternalError()
 
         # Dispara todas as requisições em paralelo
         results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
 
+    results = [url for url in results if url != ""]
+
     return results
 
-def handle_reel_info(url: str) -> tuple[datetime, PostType]:
+async def handle_reel_info(url: str) -> tuple[datetime, PostType]:
     """
     Extrai informações do reel.
 
-    Parâmetros
-    ----------
     :param url: URL da mídia
 
     :return: Retorna uma tupla contendo um `datetime` com a data de publicação do reel e `PostType` com o tipo do reel (imagem ou vídeo).
 
-    Exemplo
+    Examples
     -------
-    >>> handle_reel_info("https://www.instagram.com/123456789.mp4")
-    (datetime, PostType.VIDEO)
+    >>> await handle_reel_info("https://www.instagram.com/123456789.mp4")
+    (datetime(2025, 8, 3, 12, 0), PostType.VIDEO)
     """
 
-    response = requests.head(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.head(url)
 
     # Obtem a data de publicação do reel
     date_str = response.headers.get('Last-Modified')

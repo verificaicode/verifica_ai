@@ -9,7 +9,7 @@ class PosProcessor:
 
         return self.process_response(response_text, fonts)
 
-    def process_response(self, response_text: str, detalhed_fonts: list[dict[str, str]]) -> str:
+    def process_response(self, response_text: str, fonts: list[str]) -> str:
         """
         Processa a resposta gerada pelo Gemini.
 
@@ -22,19 +22,18 @@ class PosProcessor:
         :return response_text: String contendo a explicação e suas fontes.
         """
 
-        fonts = self.order_by_confiability(detalhed_fonts)
-
         formated_fonts = ""
         acc_fonts = []
 
         for font in fonts:
             acc_fonts.append(font)
-            temp_formated = "\nFontes:\n" + "\n\n".join(acc_fonts)
+            temp_formated = "\n\nFontes:\n" + "\n\n".join(acc_fonts)
             if len(f"{response_text}{temp_formated}") > 1000:
                 # Se ultrapassou, para antes de adicionar essa fonte
                 acc_fonts.pop()
                 break
-            formated_fonts = "\nFontes:\n" + "\n\n".join(acc_fonts)
+
+            formated_fonts = ("\n\nFontes:\n" + "\n\n".join(acc_fonts)) if len(fonts) > 0 else ""
 
         return f"{response_text}{formated_fonts}"
     

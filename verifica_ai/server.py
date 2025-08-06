@@ -41,7 +41,7 @@ class Server(AppContext, InputHandler, VerifyLinks):
 
         if self.DEBUG:
             await self.connect_to_server()
-            
+
         else:
             await task
 
@@ -61,12 +61,13 @@ class Server(AppContext, InputHandler, VerifyLinks):
 
         await self.io.wait()
 
+        await self.connect_to_server()
+
     def connect(self):
         print("Conectado ao servidor.")
 
     async def disconnect(self):
         print("Desconectado do servidor.")
-        await self.connect_to_server()
 
     def server_socketio_connection(self):
         print("novo cliente conectado.")

@@ -4,14 +4,16 @@ import httpx
 from instaloader import Post
 from instaloader.exceptions import BadResponseException
 from verifica_ai.exceptions import VerificaAiException
+from verifica_ai.handle_gemini_api import HandleGeminiAPI
 from verifica_ai.types import AttachmentMessageType, PostContent, PostType, ShareType
 from verifica_ai.utils import get_img_index_from_url, get_shortcode_from_url, handle_reel_info
 
 class PreProcessor:
-    def __init__(self, instaloader_context: Post, posts: dict, TEMP_PATH: str) -> None:
+    def __init__(self, instaloader_context: Post, posts: dict, TEMP_PATH: str, handle_gemini_api: HandleGeminiAPI) -> None:
         self.instaloader_context = instaloader_context
         self.posts = posts
         self.TEMP_PATH = TEMP_PATH
+        self.generate_response = handle_gemini_api.generate_response
     
     async def get_result(self, sender_id: int, message: dict, text: str) -> PostContent:
         # Se o tipo da mensgem não for suportado
@@ -47,31 +49,32 @@ class PreProcessor:
                 elif text.startswith("https://www.instagram.com/share/"):
                     async with httpx.AsyncClient(follow_redirects=True) as client:
                         response = await client.get(text)
-                        url = response.url
-                        shortcode = get_shortcode_from_url(url)
-                        post = Post.from_shortcode(self.instaloader_context.context, shortcode)
-                        caption = post.caption or ""
-                        post_content = PostContent(
-                            post_type=PostType.MEDIA_TYPE_INDETERMINED,
-                            share_type=ShareType.SHARED_VIA_LINK,
-                            shortcode=shortcode,
-                            post=post,
-                            file_src=None,
-                            filename=None,
-                            caption=caption,
-                            data=post.date,
-                            object_if_is_old_message=None,
-                            might_send_response_to_user=True,
-                            url=text,
-                            text=None
-                        )
+
+                    url = response.url
+                    shortcode = get_shortcode_from_url(url)
+                    post = Post.from_shortcode(self.instaloader_context.context, shortcode)
+                    caption = post.caption or ""
+                    post_content = PostContent(
+                        post_type=PostType.MEDIA_TYPE_INDETERMINED,
+                        share_type=ShareType.SHARED_VIA_LINK,
+                        shortcode=shortcode,
+                        post=post,
+                        file_src=None,
+                        filename=None,
+                        caption=caption,
+                        data=post.date,
+                        object_if_is_old_message=None,
+                        might_send_response_to_user=True,
+                        url=text,
+                        text=None
+                    )
 
                 # Se o texto da mensagem não contiver link:
                 else:
                     # Se o usuário tiver enviado algum post anteriormente:
                     if sender_id in self.posts:
                         # Prompt usado para identificar referência de posts na mensagem:
-                        response_text, _ = self.generate_response([
+                        response_text, _ = await self.generate_response([
                             f'Analise a mensagem: "{text}". Me retorne apenas "Sim" se a mensagem se refere a algo anterior, caso contrário "Não".'
                         ])
 
@@ -122,7 +125,7 @@ class PreProcessor:
 
             message_type = self.posts[sender_id]["type"] if object_if_is_old_message else message["attachments"][0]["type"]
             file_src = self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
-            data, post_type = handle_reel_info(file_src)
+            data, post_type = await handle_reel_info(file_src)
 
             # Se for um reels compartilhado pelo aplicativo:
             if message_type == "ig_reel":
@@ -205,19 +208,19 @@ class PreProcessor:
             # Se for uma postagem compartilhada pelo aplicativo do tipo video ou um video enviado pela galeria
             if share_type == ShareType.SHARED_VIA_APP or post_type == PostType.VIDEO:
                 async with httpx.AsyncClient() as client:
-                    response = await client.stream("GET", post_content.file_src)
+                    async with client.stream("GET", post_content.file_src) as response:
 
-                    if post_type == PostType.VIDEO:
-                        filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.mp4"
+                        if post_type == PostType.VIDEO:
+                            filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.mp4"
 
-                    else:
-                        filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.jpg"
+                        else:
+                            filename = f"{self.TEMP_PATH}/v_{str(shortcode)}_s1.jpg"
 
-                    with open(filename, "wb") as f:
-                        async for chunk in response.aiter_bytes(chunk_size=8192):
-                            f.write(chunk)
+                        with open(filename, "wb") as f:
+                            async for chunk in response.aiter_bytes(chunk_size=8192):
+                                f.write(chunk)
 
-                    return filename, post_type
+                        return filename, post_type
                 
             else:
                 self.instaloader_context.download_post(post_content.post, target=self.TEMP_PATH)
@@ -251,27 +254,27 @@ class PreProcessor:
                 url = post.url
 
                 async with httpx.AsyncClient() as client:
-                    response = await client.stream("GET", url)
+                    async with client.stream("GET", url) as response:
 
-                    # Verifica se a imagem foi baixada com sucesso
-                    if response.status_code == 200:
-                        if post.is_video:
-                            filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.mp4"
-                            post_type = PostType.VIDEO
+                        # Verifica se a imagem foi baixada com sucesso
+                        if response.status_code == 200:
+                            if post.is_video:
+                                filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.mp4"
+                                post_type = PostType.VIDEO
+                            
+                            else:
+                                filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.jpg"
+                                post_type = PostType.IMAGE
+
+                            with open(filename, "wb") as f:
+                                async for chunk in response.aiter_bytes(chunk_size=8192):
+                                    f.write(chunk)
+
+
+                            return filename, post_type
                         
                         else:
-                            filename = f"{self.TEMP_PATH}/vl_{str(shortcode)}_{sufix}.jpg"
-                            post_type = PostType.IMAGE
-
-                        with open(filename, "wb") as f:
-                            async for chunk in response.aiter_bytes(chunk_size=8192):
-                                f.write(chunk)
-
-
-                        return filename, post_type
-                    
-                    else:
-                        raise VerificaAiException.InvalidLink()
+                            raise VerificaAiException.InvalidLink()
 
         except Exception as e:
             traceback.print_exc()

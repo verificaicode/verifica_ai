@@ -14,11 +14,11 @@ const socket = io();
 socket.on("connect", ()=>{
 
 console.log("conectado")
-socket.emit("message", JSON.stringify({
+socket.emit("verify", JSON.stringify({
     VERIFY_TOKEN: "s8NBYn9kspFIdBI9",
     link: "https://www.instagram.com/reel/DL8Gv-uPJ5D/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
 }))
-socket.on("message", (message)=>{
+socket.on("updated_message", (message)=>{
     console.log("message", message)
 })
 

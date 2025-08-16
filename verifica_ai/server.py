@@ -91,8 +91,8 @@ class Server(AppContext, InputHandler, VerifyLinks):
         self.app.add_url_rule('/webhook', view_func=self.webhook_flask, methods=["POST"])
         self.app.add_url_rule('/verify', view_func=self.verify_flask, methods=["POST"])
 
-    def home(self):
-        return send_file("public/index.html")
+    async def home(self):
+        return await send_file("public/index.html")
 
     async def webhook_socketio(self, data):
         await self.process_webhook_message(data)

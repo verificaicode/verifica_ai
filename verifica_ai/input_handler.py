@@ -21,14 +21,9 @@ class InputHandler():
         Filtra mensagens irrelevantes (do próprio bot, leituras, etc), extrai o
         conteúdo relevante e chama `process_input` para continuar o fluxo.
 
-        Parâmetros
-        ----------
-            data : dict
-            Objeto JSON (dicionário) da mensagem enviada pela Graph API.
+        :param data: Objeto JSON (dicionário) da mensagem enviada pela Graph API.
 
-        Retorna
-        -------
-            None
+        :return: None
         """
 
         messaging_event = data['entry'][0]['messaging'][0]
@@ -55,18 +50,13 @@ class InputHandler():
         processamento do conteúdo, tratando erros específicos para informar
         o usuário adequadamente.
 
-        Parâmetros
-        ----------
-            sender_id : int
-                ID do usuário remetente.
-            message : dict
-                Dados da mensagem recebida.
-            text : str
-                Texto da mensagem, se disponível.
+        :param sender_id : ID do usuário remetente.
+        
+        :param message: Dados da mensagem recebida.
 
-        Returna
-        -------
-            None
+        :param text: Texto da mensagem, se disponível.
+
+        :return: None
         """
 
         await self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
@@ -121,11 +111,11 @@ class InputHandler():
 
     def send_message_to_user_via_instagram(self, sender_id: int, message_text: str):
         """
-            Envia mensagem para o usuário
+        Envia mensagem para o usuário
 
-            :param sender_id: Id do usuário para enviar a mensagem
+        :param sender_id: Id do usuário para enviar a mensagem.
 
-            :param message_text: Texto a ser enviado
+        :param message_text: Texto a ser enviado.
         """
 
         url = "https://graph.instagram.com/v22.0/me/messages"

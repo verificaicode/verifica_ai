@@ -3,6 +3,10 @@ import time
 from flask import request
 
 class VerifyLinks():
+    """
+    Classe responsável por lidar com um serviço feito para automatização de verificação de postagens em larga escala, tendo como objetivo avaliar o desempenho desse serviço.
+    """
+
     def __init__(self):
         pass
 
@@ -19,14 +23,13 @@ class VerifyLinks():
 
         return json.dumps({ "response": response_text }), 200
     
-    def verify_socketio(self, message):
+    async def verify_socketio(self, sid, message):
         data = json.loads(message)
-        sender_id = str(int(time.time() * 1000))
         
         if not ("VERIFY_TOKEN" in data) or data["VERIFY_TOKEN"] != self.VERIFY_TOKEN:
-            self.send_message_to_user_via_site(sender_id, json.dumps({ "error": "401", "type": "INVALID_TOKEN" })), 200
+            await self.send_message_to_user_via_site(sid, json.dumps({ "error": "401", "type": "INVALID_TOKEN" })), 200
         
         link = data["link"]
         message = data["message"] if "message" in data else {}
 
-        self.process_input("site", sender_id, message, link)
+        await self.process_input("site", sid, message, link)

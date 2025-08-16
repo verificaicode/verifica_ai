@@ -81,17 +81,6 @@ class InputHandler():
                 await self.response_user(user_received, sender_id, pos_processor_result)
 
         # Tratamento de erros
-        except VerificaAiException.InternalError:
-            await self.response_user(user_received, sender_id, "Ocorreu um erro ao processar a mensagem. Tente novamente mais tarde.")
-
-        except VerificaAiException.InvalidLink:
-            await self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
-            return
-        
-        except VerificaAiException.TypeUnsupported:
-            await self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
-            return
-        
         except VerificaAiException.GeminiQuotaExceeded:
             traceback.print_exc()
             await self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
@@ -108,7 +97,18 @@ class InputHandler():
             else:
                 await self.response_user(user_received, sender_id, "Ocorreu um erro ao enviar a mensagem. Tente novamente mais tarde.")
             return
+
+        except VerificaAiException.InternalError:
+            await self.response_user(user_received, sender_id, "Ocorreu um erro ao processar a mensagem. Tente novamente mais tarde.")
+
+        except VerificaAiException.InvalidLink:
+            await self.response_user(user_received, sender_id, "Link inválido. Verifique-o e tente novamente.")
+            return
         
+        except VerificaAiException.TypeUnsupported:
+            await self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
+            return
+                
     async def response_user(self, user_received, sender_id, message_text):
         if user_received == "instagram":
             self.send_message_to_user_via_instagram(sender_id, message_text)
@@ -117,7 +117,7 @@ class InputHandler():
             await self.send_message_to_user_via_site(sender_id, message_text)
 
     async def send_message_to_user_via_site(self, sender_id, message_text):
-        await self.socketio.emit("message", message_text)
+        await self.socketio.emit("updated_message", message_text, to=sender_id)
 
     def send_message_to_user_via_instagram(self, sender_id: int, message_text: str):
         """

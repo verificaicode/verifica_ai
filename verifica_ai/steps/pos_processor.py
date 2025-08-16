@@ -2,6 +2,13 @@
 from verifica_ai.types import DetalhedFont
 
 class PosProcessor:
+    """
+    Realiza algumas melhorias na resposta.
+
+    :param response: Uma tupla contendo a resposta gerada pela LLM e as uma lista com as fontes utilizadas para a pesquisa.
+    :type response: tuple[str, list[str]]
+    """
+
     def get_result(self, response: tuple[str, list[str]]) -> str:
         response_text, fonts = response
 

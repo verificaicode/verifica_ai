@@ -66,7 +66,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     """
 
     timeout = httpx.Timeout(3.0, connect=2.0)
-    limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
+    limits = httpx.Limits(max_connections=30, max_keepalive_connections=30)
 
     async with httpx.AsyncClient(
         follow_redirects=True,
@@ -86,6 +86,9 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
                 return ""
             
             except httpx.ConnectTimeout:
+                return ""
+            
+            except httpx.ConnectError:
                 return ""
             
             except httpx.RequestError:

@@ -12,6 +12,10 @@ from verifica_ai.input_handler import InputHandler
 from verifica_ai.verify_links import VerifyLinks
 
 class Server(AppContext, InputHandler, VerifyLinks):
+    """
+    Camada responsável por lidar diretamente com o recebimento de mensagens.
+    """
+
     def __init__(self):
         asyncio.run(self.load_app())
 
@@ -31,8 +35,8 @@ class Server(AppContext, InputHandler, VerifyLinks):
         self.socketio = AsyncServer(
             async_mode='asgi',
             cors_allowed_origins='*',
-            ping_interval = 5,
-            ping_timeout = 3
+            ping_interval = 20,
+            ping_timeout = 60
         )
         self.app = Quart(__name__)
         self.asgi_app = ASGIApp(self.socketio, self.app)
@@ -72,8 +76,8 @@ class Server(AppContext, InputHandler, VerifyLinks):
     def server_socketio_connection(self):
         print("novo cliente conectado.")
 
-    def server_socketio_message(self, message):
-        self.verify_socketio(message)
+    async def server_socketio_verify(self, sid, message):
+        await self.verify_socketio(sid, message)
 
     def register_routes(self):
         self.io.on("connect", self.connect)
@@ -81,7 +85,7 @@ class Server(AppContext, InputHandler, VerifyLinks):
         self.io.on("webhook", self.webhook_socketio)
 
         self.socketio.on("connection", self.server_socketio_connection)
-        self.socketio.on("message", self.server_socketio_message)
+        self.socketio.on("verify", self.server_socketio_verify)
 
         self.app.add_url_rule('/', view_func=self.home, methods=["GET"])
         self.app.add_url_rule('/webhook', view_func=self.webhook_flask, methods=["POST"])

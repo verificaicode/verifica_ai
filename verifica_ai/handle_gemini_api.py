@@ -1,15 +1,29 @@
 import asyncio
 import json
-from urllib.parse import urlparse
 import os
+from urllib.parse import urlparse
+import traceback
 from google.genai import Client
 from google.genai.errors import ClientError
-from google.genai.types import File, FileState, GenerateContentConfig, GenerateContentResponse, Tool
 from verifica_ai.exceptions import VerificaAiException
+from google.genai.types import File, FileState, GenerateContentConfig, GenerateContentResponse, Tool
 from verifica_ai.types import DetalhedFont
 from verifica_ai.utils import get_final_urls
 
 class HandleGeminiAPI:
+    """
+    Camada responsável por lidar diretamente com a API Gemini.
+
+    :param genai_client: Cliente da API do Gemini.
+    :type genai_client: Client
+
+    :param model: Modelo a ser utilizado.
+    :type model: str
+
+    :param google_search_tool: Configurações da API de Pesquisa do Google.
+    :type google_search_tool: Tool
+    """
+
     def __init__(self, genai_client: Client, model: str, google_search_tool: Tool):
         self.genai_client =  genai_client
         self.model = model
@@ -70,12 +84,14 @@ class HandleGeminiAPI:
             print(text)
             # Carrega o json após remover o ```json e o ```
             search_dict = json.loads(text[8:-4])
+
             fonts = await get_final_urls(search_dict["urls"])
 
             for font in fonts:
                 host = urlparse(font).netloc
                 detalhed_fonts.append(DetalhedFont(uri=font, domain=host[4:] if host.startswith("www.") else host))
-        
+
+
         return text, detalhed_fonts
     
     async def upload_file(self, filename: str) -> File:

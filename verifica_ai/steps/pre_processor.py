@@ -9,6 +9,22 @@ from verifica_ai.types import AttachmentMessageType, PostContent, PostType, Shar
 from verifica_ai.utils import get_img_index_from_url, get_shortcode_from_url, handle_reel_info
 
 class PreProcessor:
+    """
+    Classe responsável por gerar um objeto `PostContent` contendo todas as informações necessárias para a análise posterior da mensagem.
+
+    :param instaloader_context: Contém as configurações do instaloader.
+    :type instaloader_context: Post
+
+    :param posts: Contém o último post enviado.
+    :type posts: dict
+
+    :param TEMP_PATH: Local onde será armazenado temporariamente a imagem ou vídeo da mensagem se houver.
+    :type TEMP_PATH:  str
+
+    :param handle_gemini_api: Camada de abstração para a API do Gemini.
+    :type handle_gemini_api: HandleGeminiAPI
+    """
+
     def __init__(self, instaloader_context: Post, posts: dict, TEMP_PATH: str, handle_gemini_api: HandleGeminiAPI) -> None:
         self.instaloader_context = instaloader_context
         self.posts = posts
@@ -125,6 +141,7 @@ class PreProcessor:
 
             message_type = self.posts[sender_id]["type"] if object_if_is_old_message else message["attachments"][0]["type"]
             file_src = self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
+            print(file_src)
             data, post_type = await handle_reel_info(file_src)
 
             # Se for um reels compartilhado pelo aplicativo:
@@ -132,7 +149,7 @@ class PreProcessor:
                 post_content = PostContent(
                     post_type=post_type,
                     share_type=ShareType.SHARED_VIA_APP,
-                    shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else int(message["attachments"][0]["payload"]["reel_video_id"]),
+                    shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["reel_video_id"],
                     post=None,
                     file_src=file_src,
                     filename=None,
@@ -186,7 +203,7 @@ class PreProcessor:
             filename, post_type = await self.handle_post_file(post_content)
             post_content.filename = filename
             post_content.post_type = post_type
-            
+
         return post_content
 
     async def handle_post_file(self, post_content: PostContent) -> tuple[str, PostType]:
@@ -276,9 +293,9 @@ class PreProcessor:
                         else:
                             raise VerificaAiException.InvalidLink()
 
-        except Exception as e:
-            traceback.print_exc()
-
         # Repassa o erro para o tratamento de erros principal
         except VerificaAiException.InvalidLink():
-            raise VerificaAiException.InvalidLink()
+            raise
+
+        except Exception as e:
+            traceback.print_exc()

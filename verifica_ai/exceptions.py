@@ -4,18 +4,6 @@ from instaloader.exceptions import BadResponseException
 class VerificaAiException:
     "Tratamento de erros"
 
-    class InternalError(Exception):
-        "Erro interno"
-        pass
-
-    class TypeUnsupported(Exception):
-        "Tipo de post insuportado"
-        pass
-
-    class InvalidLink(BadResponseException):
-        "Link de post inválido"
-        pass
-    
     class GeminiQuotaExceeded(ClientError):
         "Limite Gemini API excedido"
         def __init__(self, original: ClientError):
@@ -31,3 +19,19 @@ class VerificaAiException:
         def __init__(self, original: object):
         
             super().__init__(original)
+
+    class InternalError(Exception):
+        "Erro interno"
+        pass
+
+    class InvalidLink(BadResponseException):
+        "Link de post inválido"
+        pass
+
+    class TypeUnsupported(Exception):
+        "Tipo de post insuportado"
+        pass
+
+    class ResponseSearchFormatError(Exception):
+        "Resposta da pesquisa realizada pelo Gemini esperava ```json{conteúdo}``` e retornou no formato incorreto. Tenta realizar a pesquisa mais uma vez."
+ 

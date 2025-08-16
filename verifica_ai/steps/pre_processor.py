@@ -141,7 +141,7 @@ class PreProcessor:
 
             message_type = self.posts[sender_id]["type"] if object_if_is_old_message else message["attachments"][0]["type"]
             file_src = self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
-            print(file_src)
+
             data, post_type = await handle_reel_info(file_src)
 
             # Se for um reels compartilhado pelo aplicativo:
@@ -240,10 +240,9 @@ class PreProcessor:
                         return filename, post_type
                 
             else:
-                self.instaloader_context.download_post(post_content.post, target=self.TEMP_PATH)
-
                 post = None
                 sufix = "s1"
+                url=None
 
                 # Se for uma postagem com multiplas mídias
                 multimidia = post_content.post.typename == 'GraphSidecar'
@@ -262,13 +261,21 @@ class PreProcessor:
                         post = posts[img_index]
                         sufix = f"_m{img_index}"
 
+                        # post.display_url representa a capa em postagens carrossel
+                        # post.video_url representa a URL do video
+                        # Se for video armazena sua URL. Se for imagem, pega a capa (a própria imagem)
+                        url = url = post.video_url if post.is_video else post.display_url
+
                     else:
                         raise VerificaAiException.InvalidLink()
 
                 else:
                     post = post_content.post
 
-                url = post.url
+                    # post.url representa a capa em reels ou post
+                    # post.video_url representa a URL do video
+                    # Se for video armazena sua URL. Se for imagem, pega a capa (a própria imagem)
+                    url = url = post.video_url if post.is_video else post.url
 
                 async with httpx.AsyncClient() as client:
                     async with client.stream("GET", url) as response:
@@ -286,7 +293,6 @@ class PreProcessor:
                             with open(filename, "wb") as f:
                                 async for chunk in response.aiter_bytes(chunk_size=8192):
                                     f.write(chunk)
-
 
                             return filename, post_type
                         

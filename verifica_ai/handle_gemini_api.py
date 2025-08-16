@@ -81,7 +81,6 @@ class HandleGeminiAPI:
         text = response.text
         detalhed_fonts = []
         if text.startswith("```"):
-            print(text)
             # Carrega o json após remover o ```json e o ```
             search_dict = json.loads(text[8:-4])
 

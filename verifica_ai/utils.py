@@ -72,7 +72,8 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
         follow_redirects=True,
         verify=False,
         timeout=timeout,
-        limits=limits
+        limits=limits,
+        max_redirects=50
     ) as client:
 
         async def fetch_url(url: str) -> str:
@@ -89,6 +90,15 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
                 return ""
             
             except httpx.ConnectError:
+                return ""
+
+            except httpx.RemoteProtocolError:
+                return ""
+            
+            except httpx.TooManyRedirects:
+                return ""
+
+            except httpx.ReadError:
                 return ""
             
             except httpx.RequestError:

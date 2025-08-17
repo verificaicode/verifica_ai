@@ -1,10 +1,11 @@
 import requests
 import traceback
 from verifica_ai.exceptions import VerificaAiException
+from verifica_ai.handle_gemini_api import HandleGeminiAPI
 from verifica_ai.steps.pre_processor import PreProcessor
 from verifica_ai.steps.processor import Processor
 from verifica_ai.steps.pos_processor import PosProcessor
-from verifica_ai.handle_gemini_api import HandleGeminiAPI
+from verifica_ai.types import PostContent
 
 class InputHandler():
     """
@@ -37,8 +38,16 @@ class InputHandler():
         if not ("message" in messaging_event):
             return None
         
+        posts: dict[str,PostContent] = self.posts
+        sended_timestamp = messaging_event["timestamp"]
+        
+        if sender_id in posts:
+            if posts[sender_id].sended_timestamp == sended_timestamp:
+                return
+        
         message = messaging_event["message"]
         text = message["text"] if "text" in message else ""
+        message["sended_timestamp"] = sended_timestamp
 
         await self.process_input("instagram", sender_id, message, text)
 

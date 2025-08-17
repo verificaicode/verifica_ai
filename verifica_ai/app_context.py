@@ -4,13 +4,14 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai.types import GoogleSearch,  Tool
 import instaloader
+from verifica_ai.types import PostContent
 
 # Carrega variáveis de ambiente
 load_dotenv()
 
 class AppContext():
     def __init__(self):
-        self.posts = {}
+        self.posts: dict[str,PostContent] = {}
 
         # Definição de constantes
         self.TEMP_PATH = "tmp/files"

@@ -103,6 +103,9 @@ class PostContent:
 
     :param text: Texto da mensagem enviada pelo usuário.
     :type text: str or None
+
+    :param sended_timestamp: Timestamp contendo a data de envio da mensagem.
+    :type sended_timestamp: int
     """
         
     post_type: PostType
@@ -117,3 +120,4 @@ class PostContent:
     might_send_response_to_user: bool
     url: Optional[str]
     text: Optional[str]
+    sended_timestamp: int

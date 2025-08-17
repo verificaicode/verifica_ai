@@ -37,6 +37,7 @@ class PreProcessor:
             raise VerificaAiException.TypeUnsupported()
 
         attachment_message_type = AttachmentMessageType.NEW_MESSAGE if "attachments" in message else AttachmentMessageType.NONE
+        sended_timestamp = message["sended_timestamp"]
         post_content = None
 
         if attachment_message_type == AttachmentMessageType.NONE:
@@ -58,7 +59,8 @@ class PreProcessor:
                         object_if_is_old_message=None,
                         might_send_response_to_user=True,
                         url=text,
-                        text=None
+                        text=None,
+                        sended_timestamp=sended_timestamp
                     )
 
                 # Se o texto da mensagem for o link de uma postagem compartilhada:
@@ -82,7 +84,8 @@ class PreProcessor:
                         object_if_is_old_message=None,
                         might_send_response_to_user=True,
                         url=text,
-                        text=None
+                        text=None,
+                        sended_timestamp=sended_timestamp
                     )
 
                 # Se o texto da mensagem não contiver link:
@@ -112,7 +115,8 @@ class PreProcessor:
                                 object_if_is_old_message=None,
                                 might_send_response_to_user=True,
                                 url=None,
-                                text=text
+                                text=text,
+                                sended_timestamp=sended_timestamp
                             )
                     else:
                         post_content = PostContent(
@@ -127,7 +131,8 @@ class PreProcessor:
                             object_if_is_old_message=None,
                             might_send_response_to_user=True,
                             url=None,
-                            text=text
+                            text=text,
+                            sended_timestamp=sended_timestamp
                         )
 
             except BadResponseException:
@@ -158,7 +163,8 @@ class PreProcessor:
                     object_if_is_old_message=object_if_is_old_message,
                     might_send_response_to_user=True,
                     url=None,
-                    text=None
+                    text=None,
+                    sended_timestamp=sended_timestamp
                 )
 
             # Se for um video enviado da galeria:
@@ -175,7 +181,8 @@ class PreProcessor:
                     object_if_is_old_message=object_if_is_old_message,
                     might_send_response_to_user=True,
                     url=None,
-                    text=None
+                    text=None,
+                    sended_timestamp=sended_timestamp
                 )
 
             # Se for uma imagem enviada da galeria
@@ -192,7 +199,8 @@ class PreProcessor:
                     object_if_is_old_message=object_if_is_old_message,
                     might_send_response_to_user=True,
                     url=None,
-                    text=None
+                    text=None,
+                    sended_timestamp=sended_timestamp
                 )
 
         if attachment_message_type == AttachmentMessageType.NEW_MESSAGE:

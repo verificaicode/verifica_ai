@@ -49,8 +49,6 @@ class InputHandler():
         text = message["text"] if "text" in message else ""
         message["sended_timestamp"] = sended_timestamp
 
-        print(message)
-
         await self.process_input("instagram", sender_id, message, text)
 
     async def process_input(self, user_received: str, sender_id: int, message: dict, text: str) -> None:
@@ -74,11 +72,8 @@ class InputHandler():
 
         try:
             handle_gemini_api = HandleGeminiAPI(self.genai_client, self.model, self.google_search_tool)
-            print("foie")
             pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH, handle_gemini_api).get_result(sender_id, message, text)
-            print("foie1")
             processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
-            print("foie2")
             pos_processor_result = PosProcessor().get_result(processor_result)
 
             if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):

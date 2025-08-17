@@ -65,64 +65,66 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
-    print("foie4")
+    with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
+        results = await client.post("https://worker.verifai.workers.dev")
+    # print("foie4")
 
-    timeout = httpx.Timeout(connect=2.0, read=3.0, write=3.0, pool=3.0)
-    limits = httpx.Limits(max_connections=30, max_keepalive_connections=30)
+    # timeout = httpx.Timeout(connect=2.0, read=3.0, write=3.0, pool=3.0)
+    # limits = httpx.Limits(max_connections=30, max_keepalive_connections=30)
 
-    print("foie5")
+    # print("foie5")
 
-    async with httpx.AsyncClient(
-        follow_redirects=True,
-        verify=False,
-        timeout=timeout,
-        limits=limits,
-        max_redirects=20
-    ) as client:
+    # async with httpx.AsyncClient(
+    #     follow_redirects=True,
+    #     verify=False,
+    #     timeout=timeout,
+    #     limits=limits,
+    #     max_redirects=50
+    # ) as client:
 
-        async def fetch_url(url: str) -> str:
-            try:
-                print("foie7", url)
-                response = await client.get(url)
-                print("foie8")
-                # Retorna a URL final como string
-                return str(response.url)
+    #     async def fetch_url(url: str) -> str:
+    #         try:
+    #             print("foie7", url)
+    #             response = await client.get(url)
+    #             print("foie8")
+    #             # Retorna a URL final como string
+    #             return str(response.url)
             
-            except httpx.ReadTimeout:
-                return ""
+    #         except httpx.ReadTimeout:
+    #             return ""
             
-            except httpx.ConnectTimeout:
-                return ""
+    #         except httpx.ConnectTimeout:
+    #             return ""
             
-            except httpx.ConnectError:
-                return ""
+    #         except httpx.ConnectError:
+    #             return ""
 
-            except httpx.RemoteProtocolError:
-                return ""
+    #         except httpx.RemoteProtocolError:
+    #             return ""
             
-            except httpx.TooManyRedirects:
-                return ""
+    #         except httpx.TooManyRedirects:
+    #             return ""
 
-            except httpx.ReadError:
-                return ""
+    #         except httpx.ReadError:
+    #             return ""
             
-            except httpx.RequestError as e:
-                print(e)
-                # traceback.print_exc()
-                # raise VerificaAiException.InternalError()
-                return ""
+    #         except httpx.RequestError as e:
+    #             print(e)
+    #             # traceback.print_exc()
+    #             # raise VerificaAiException.InternalError()
+    #             return ""
             
-            except Exception as e:
-                print(e)
-                # traceback.print_exc()
-                # raise VerificaAiException.InternalError()
-                return ""
+    #         except Exception as e:
+    #             print(e)
+    #             # traceback.print_exc()
+    #             # raise VerificaAiException.InternalError()
+    #             return ""
 
-        print("foie6")
-        # Dispara todas as requisições em paralelo
-        # results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
-        results = [await fetch_url(url) for url in font_urls]
-        print("foie9")
+    #     print("foie6")
+    #     # Dispara todas as requisições em paralelo
+    #     # results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
+    #     results = [await fetch_url(url) for url in font_urls]
+    #     print("foie9")
 
     results = [url for url in results if url != ""]
 

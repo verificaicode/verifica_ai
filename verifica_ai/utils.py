@@ -67,7 +67,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
 
     print("foie4")
 
-    timeout = httpx.Timeout(3.0, connect=2.0)
+    timeout = httpx.Timeout(connect=2.0, read=3.0, write=3.0, pool=3.0)
     limits = httpx.Limits(max_connections=30, max_keepalive_connections=30)
 
     print("foie5")

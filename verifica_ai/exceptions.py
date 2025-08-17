@@ -13,9 +13,13 @@ class VerificaAiException:
                 original.response.json(),
                 getattr(original, 'http_response', None)
             )
+    
+    class InstaloaderQuotaExceeded(Exception):
+        "Limite de requisições com o instaloader atingido"
+        pass
 
     class GraphAPIError(Exception):
-        "Erro ocorrido ao tentar enviar a mensagem para o instagram."
+        "Erro ocorrido ao tentar enviar a mensagem para o instagram"
         def __init__(self, original: object):
         
             super().__init__(original)

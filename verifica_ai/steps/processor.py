@@ -130,8 +130,8 @@ class Processor():
         
         # Caso o erro seja gerado ao tentar converter para json a resposta da pesquisa processada (retirando o markdown ```json{conteúdo}```)
         except JSONDecodeError:
-            raise VerificaAiException.ResponseSearchFormatError
+            raise VerificaAiException.ResponseSearchFormatError()
         
         except Exception:
             traceback.print_exc()
-            raise VerificaAiException.InternalError
+            raise VerificaAiException.InternalError()

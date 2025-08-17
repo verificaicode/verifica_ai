@@ -2,7 +2,7 @@ import traceback
 from datetime import datetime
 import httpx
 from instaloader import Post
-from instaloader.exceptions import BadResponseException
+from instaloader.exceptions import BadResponseException, ConnectionException
 from verifica_ai.exceptions import VerificaAiException
 from verifica_ai.handle_gemini_api import HandleGeminiAPI
 from verifica_ai.types import AttachmentMessageType, PostContent, PostType, ShareType
@@ -137,6 +137,9 @@ class PreProcessor:
 
             except BadResponseException:
                 raise VerificaAiException.InvalidLink()
+            
+            except ConnectionException:
+                raise VerificaAiException.InstaloaderQuotaExceeded()
 
         if attachment_message_type in [AttachmentMessageType.NEW_MESSAGE, AttachmentMessageType.OLD_MESSAGE]:
             object_if_is_old_message = {

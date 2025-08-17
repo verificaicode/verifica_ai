@@ -90,6 +90,10 @@ class InputHandler():
             await self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
             return
         
+        except VerificaAiException.InstaloaderQuotaExceeded:
+            await self.response_user(user_received, sender_id, "Muitas requisições ao mesmo tempo. Tente novamente mais tarde.")
+            return
+        
         except VerificaAiException.GraphAPIError as e:
             traceback.print_exc()
 

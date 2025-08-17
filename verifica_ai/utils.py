@@ -65,8 +65,12 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
+    print("foie4")
+
     timeout = httpx.Timeout(3.0, connect=2.0)
     limits = httpx.Limits(max_connections=30, max_keepalive_connections=30)
+
+    print("foie5")
 
     async with httpx.AsyncClient(
         follow_redirects=True,
@@ -78,8 +82,9 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
 
         async def fetch_url(url: str) -> str:
             try:
+                print("foie7")
                 response = await client.get(url)
-
+                print("foie8")
                 # Retorna a URL final como string
                 return str(response.url)
             
@@ -109,8 +114,10 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
                 traceback.print_exc()
                 raise VerificaAiException.InternalError()
 
+        print("foie6")
         # Dispara todas as requisições em paralelo
         results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
+        print("foie9")
 
     results = [url for url in results if url != ""]
 

@@ -40,7 +40,7 @@ class InputHandler():
         
         posts: dict[str,PostContent] = self.posts
         sended_timestamp = messaging_event["timestamp"]
-        
+
         if sender_id in posts:
             if posts[sender_id].sended_timestamp == sended_timestamp:
                 return
@@ -72,8 +72,11 @@ class InputHandler():
 
         try:
             handle_gemini_api = HandleGeminiAPI(self.genai_client, self.model, self.google_search_tool)
+            print("foie")
             pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH, handle_gemini_api).get_result(sender_id, message, text)
+            print("foie1")
             processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
+            print("foie2")
             pos_processor_result = PosProcessor().get_result(processor_result)
 
             if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):

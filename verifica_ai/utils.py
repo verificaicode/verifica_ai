@@ -65,8 +65,12 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
-    with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
-        results = await client.post("https://worker.verifai.workers.dev")
+    async with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
+        response = await client.post("https://worker.verifai.workers.dev/get_final_urls", json=font_urls)
+        print(response)
+        results = response.json()
+
+    print(results)
     # print("foie4")
 
     # timeout = httpx.Timeout(connect=2.0, read=3.0, write=3.0, pool=3.0)
@@ -126,7 +130,6 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     #     results = [await fetch_url(url) for url in font_urls]
     #     print("foie9")
 
-    results = [url for url in results if url != ""]
 
     return results
 

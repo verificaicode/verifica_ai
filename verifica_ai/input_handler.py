@@ -49,6 +49,8 @@ class InputHandler():
         text = message["text"] if "text" in message else ""
         message["sended_timestamp"] = sended_timestamp
 
+        print(message)
+
         await self.process_input("instagram", sender_id, message, text)
 
     async def process_input(self, user_received: str, sender_id: int, message: dict, text: str) -> None:

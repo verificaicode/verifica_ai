@@ -65,12 +65,17 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     ['https://www.python.org', 'https://www.wikipedia.org']
     """
 
-    async with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
-        response = await client.post("https://worker.verifai.workers.dev/get_final_urls", json=font_urls)
-        print(response)
-        results = response.json()
+    try:
+        async with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
+            response = await client.post("https://worker.verifai.workers.dev/get_final_urls", json=font_urls)
+            results = response.json()
 
-    print(results)
+        print(results)
+    
+        return results
+    
+    except Exception as e:
+        print(e)
     # print("foie4")
 
     # timeout = httpx.Timeout(connect=2.0, read=3.0, write=3.0, pool=3.0)
@@ -129,9 +134,6 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     #     # results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
     #     results = [await fetch_url(url) for url in font_urls]
     #     print("foie9")
-
-
-    return results
 
 async def handle_reel_info(url: str) -> tuple[datetime, PostType]:
     """

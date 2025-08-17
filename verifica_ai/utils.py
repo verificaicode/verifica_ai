@@ -82,7 +82,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
 
         async def fetch_url(url: str) -> str:
             try:
-                print("foie7")
+                print("foie7", url)
                 response = await client.get(url)
                 print("foie8")
                 # Retorna a URL final como string

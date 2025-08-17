@@ -108,13 +108,15 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
             
             except httpx.RequestError as e:
                 print(e)
-                traceback.print_exc()
-                raise VerificaAiException.InternalError()
+                # traceback.print_exc()
+                # raise VerificaAiException.InternalError()
+                return ""
             
             except Exception as e:
                 print(e)
-                traceback.print_exc()
-                raise VerificaAiException.InternalError()
+                # traceback.print_exc()
+                # raise VerificaAiException.InternalError()
+                return ""
 
         print("foie6")
         # Dispara todas as requisições em paralelo

@@ -118,7 +118,8 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
 
         print("foie6")
         # Dispara todas as requisições em paralelo
-        results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
+        # results = await asyncio.gather(*[fetch_url(url) for url in font_urls])
+        results = [await fetch_url(url) for url in font_urls]
         print("foie9")
 
     results = [url for url in results if url != ""]

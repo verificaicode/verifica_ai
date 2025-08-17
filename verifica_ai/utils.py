@@ -5,6 +5,7 @@ import urllib3
 import httpx
 import traceback
 from verifica_ai.types import PostType
+import requests
 from verifica_ai.exceptions import VerificaAiException
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -66,10 +67,12 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
     """
 
     try:
-        async with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
-            response = await client.post("https://worker.verifai.workers.dev/get_final_urls", json=font_urls)
-            results = response.json()
+        # async with httpx.AsyncClient(headers={ "Content-Type": "application/json" }) as client:
+        #     response = await client.post("https://worker.verifai.workers.dev/get_final_urls", json=font_urls)
+        #     results = response.json()
 
+
+        results = requests.post("https://worker.verifai.workers.dev/get_final_urls", headers={ "Content-Type": "application/json" }, json=font_urls).json()
         print(results)
     
         return results

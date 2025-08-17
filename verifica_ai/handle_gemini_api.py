@@ -78,6 +78,7 @@ class HandleGeminiAPI:
         :return: Uma tupla contendo o texto e uma lista com `DetalhedFont`.
         """
 
+        print("foie2")
         text = response.text
         detalhed_fonts = []
         if text.startswith("```"):
@@ -85,11 +86,10 @@ class HandleGeminiAPI:
             search_dict = json.loads(text[8:-4])
 
             fonts = await get_final_urls(search_dict["urls"])
-
+            print("foie2.1")
             for font in fonts:
                 host = urlparse(font).netloc
                 detalhed_fonts.append(DetalhedFont(uri=font, domain=host[4:] if host.startswith("www.") else host))
-
 
         return text, detalhed_fonts
     

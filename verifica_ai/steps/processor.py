@@ -59,7 +59,7 @@ class Processor():
 
         response = None
         fonts = None
-
+        print("foie 2.01")
         try:
             response, fonts = await self.execute_prompts(post_content, is_media, object_if_is_old_message, file, post_date, current_date)
         
@@ -71,7 +71,7 @@ class Processor():
             # Se der erro novamente, relança para o tratamento de erros principal
             except Exception:
                 raise
-
+        print("foie 2.3")
         self.handle_gemini_api.delete_file() if file else None
 
         return [ response, fonts ] if fonts else response
@@ -113,7 +113,7 @@ class Processor():
                     prompt_parts.append(file)
 
                 search_response, fonts = await self.handle_gemini_api.generate_response(prompt_parts, True)
-
+                print("foie 2.2")
                 prompt_text = insert_into_prompt(
                     self.analysis_prompt,
                     { "caption": post_content.caption, "search_response": search_response, "post_date": post_date, "current_date": current_date }

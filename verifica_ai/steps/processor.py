@@ -81,7 +81,7 @@ class Processor():
 
                 prompt_text = insert_into_prompt(
                     self.search_prompt_with_reference,
-                    { "label": "CAPTION", "caption": post_content.caption, "text": text }
+                    { "label": "CAPTION", "caption": post_content.text or post_content.caption, "text": text }
                 )
 
                 prompt_parts = [prompt_text, file]
@@ -90,7 +90,7 @@ class Processor():
 
                 prompt_text = insert_into_prompt(
                     self.analysis_prompt_with_reference,
-                    { "text": text, "caption": post_content.caption, "search_response": search_response, "post_date": post_date, "current_date": current_date }
+                    { "text": text, "caption": post_content.text or post_content.caption, "search_response": search_response, "post_date": post_date, "current_date": current_date }
                 )
                 
                 prompt_parts = [prompt_text, file]
@@ -114,7 +114,7 @@ class Processor():
 
                 prompt_text = insert_into_prompt(
                     self.analysis_prompt,
-                    { "caption": post_content.caption, "search_response": search_response, "post_date": post_date, "current_date": current_date }
+                    { "caption": post_content.text or post_content.caption, "search_response": search_response, "post_date": post_date, "current_date": current_date }
                 )
                 
                 prompt_parts = [prompt_text]

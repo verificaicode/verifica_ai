@@ -77,7 +77,7 @@ async def get_final_urls(font_urls: list[str]) -> list[str]:
         verify=False,
         timeout=timeout,
         limits=limits,
-        max_redirects=50
+        max_redirects=20
     ) as client:
 
         async def fetch_url(url: str) -> str:

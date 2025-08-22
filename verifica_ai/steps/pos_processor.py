@@ -1,4 +1,3 @@
-
 from verifica_ai.types import DetalhedFont
 
 class PosProcessor:

@@ -7,7 +7,7 @@ from google.genai import Client
 from google.genai.errors import ClientError
 from verifica_ai.exceptions import VerificaAiException
 from google.genai.types import File, FileState, GenerateContentConfig, GenerateContentResponse, Tool
-from verifica_ai.types import DetalhedFont
+from verifica_ai.verifica_ai.verifai_types import DetalhedFont
 from verifica_ai.utils import get_final_urls
 
 class HandleGeminiAPI:

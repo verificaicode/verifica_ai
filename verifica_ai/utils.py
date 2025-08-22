@@ -1,12 +1,9 @@
-import asyncio
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 import urllib3
 import httpx
-import traceback
-from verifica_ai.types import PostType
+from verifica_ai.verifica_ai.verifai_types import PostType
 import requests
-from verifica_ai.exceptions import VerificaAiException
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

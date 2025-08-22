@@ -1,4 +1,3 @@
-
 import os
 from verifica_ai.server import Server
 try:

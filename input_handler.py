@@ -5,7 +5,7 @@ from verifica_ai.handle_gemini_api import HandleGeminiAPI
 from verifica_ai.steps.pre_processor import PreProcessor
 from verifica_ai.steps.processor import Processor
 from verifica_ai.steps.pos_processor import PosProcessor
-from verifica_ai.types import PostContent
+from verifica_ai.verifica_ai.verifai_types import PostContent
 
 class InputHandler():
     """

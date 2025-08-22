@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from urllib.parse import urlparse
+import traceback
 from google.genai import Client
 from google.genai.errors import ClientError
 from verifica_ai.exceptions import VerificaAiException
@@ -96,9 +97,8 @@ class HandleGeminiAPI:
         self.file = self.genai_client.files.upload(file=filename)
 
         while state != FileState.ACTIVE:
+            state = self.genai_client.files.get(name=self.file.name).state
             await asyncio.sleep(0.5)
-            self.file = self.genai_client.files.get(name=self.file.name)
-            state = self.file.state
 
         os.remove(filename)
 

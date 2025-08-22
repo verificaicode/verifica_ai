@@ -37,6 +37,7 @@ class Processor():
 
         except Exception:
             traceback.print_exc()
+            VerificaAiException.InternalError()
 
     async def get_gemini_response(self, post_content: PostContent) -> tuple[str, list[DetalhedFont]]:
         """

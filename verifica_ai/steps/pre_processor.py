@@ -100,7 +100,7 @@ class PreProcessor:
                         # Se o texto da mensagem se referir a algum post enviado anteriormente:
                         if response_text.startswith("Sim"):
                             attachment_message_type = AttachmentMessageType.OLD_MESSAGE
-                            self.posts[sender_id]["might_send_response_to_user"] = False
+                            self.posts[sender_id].might_send_response_to_user = False
 
                         else:
                             post_content = PostContent(
@@ -147,8 +147,8 @@ class PreProcessor:
                 "text": text
             } if attachment_message_type == AttachmentMessageType.OLD_MESSAGE else None
 
-            message_type = self.posts[sender_id]["type"] if object_if_is_old_message else message["attachments"][0]["type"]
-            file_src = self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
+            message_type = self.posts[sender_id].type if object_if_is_old_message else message["attachments"][0]["type"]
+            file_src = self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
 
             data, post_type = await handle_reel_info(file_src)
 
@@ -157,11 +157,11 @@ class PreProcessor:
                 post_content = PostContent(
                     post_type=post_type,
                     share_type=ShareType.SHARED_VIA_APP,
-                    shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["reel_video_id"],
+                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["reel_video_id"],
                     post=None,
                     file_src=file_src,
                     filename=None,
-                    caption=self.posts[sender_id]["caption"] if object_if_is_old_message else message["attachments"][0]["payload"].get("title", ""),
+                    caption=self.posts[sender_id].caption if object_if_is_old_message else message["attachments"][0]["payload"].get("title", ""),
                     data=data,
                     object_if_is_old_message=object_if_is_old_message,
                     might_send_response_to_user=True,
@@ -175,9 +175,9 @@ class PreProcessor:
                 post_content = PostContent(
                     post_type=PostType.VIDEO,
                     share_type=ShareType.NOT_SHARED,
-                    shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
+                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
-                    file_src=self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    file_src=self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
                     filename=None,
                     caption="",
                     data=data,
@@ -193,9 +193,9 @@ class PreProcessor:
                 post_content = PostContent(
                     post_type=PostType.IMAGE,
                     share_type=ShareType.SHARED_VIA_APP,
-                    shortcode=self.posts[sender_id]["shortcode"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
+                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
-                    file_src=self.posts[sender_id]["file_src"] if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    file_src=self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
                     filename=None,
                     caption="",
                     data=data,

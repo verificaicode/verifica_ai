@@ -7,7 +7,7 @@ Seu objetivo é verificar a veracidade do conteúdo informado (texto ou legenda,
 
 Conteúdo a analisar:
 Mensagem: {text}
-{label}: "{caption}"
+{label}: {caption}
 
 Exemplo de resposta JSON esperada:
 

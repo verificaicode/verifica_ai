@@ -77,7 +77,7 @@ class InputHandler():
                 processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
                 pos_processor_result = PosProcessor().get_result(processor_result)
 
-                if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
+                if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id].might_send_response_to_user):
                     await self.response_user(user_received, sender_id, pos_processor_result)
             
             except ValueError:

@@ -48,7 +48,6 @@ O sistema identifica 7 tipos principais de notícia:
 - Requests (para requisições HTTP)
 - python-dotenv (para gerenciar variáveis de ambiente)
 - APIs do Instagram Graph para mensagens e webhooks
-- Tensorflow para modelos de classificação das mensagens
 
 ---
 ## Fluxograma

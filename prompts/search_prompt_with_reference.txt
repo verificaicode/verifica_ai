@@ -1,0 +1,45 @@
+Seu objetivo é verificar a veracidade do conteúdo informado (texto ou legenda, e arquivo se houver).
+
+1. A partir da mensagem referente à postagem, analise detalhadamente o conteúdo e seu contexto (especialmente em vídeos) e identifique pelo menos dois temas distintos.
+2. Para cada tema, realize pesquisas na web em fontes confiáveis e recentes.
+3. Inclua no campo "urls" todos os links acessados em suas pesquisas.
+4. Responda somente com um JSON estruturado, sem explicações extras.
+
+Conteúdo a analisar:
+Mensagem: {text}
+{label}: "{caption}"
+
+Exemplo de resposta JSON esperada:
+
+{{
+    "temas" :{{
+    "vacinação obrigatória": [
+        {{
+            "title": "Vacinação no Brasil não é obrigatória para adultos, diz Ministério da Saúde",
+            "snippet": "Segundo o Ministério da Saúde, a vacinação é um ato voluntário, salvo em casos de surtos sob controle sanitário.",
+            "date": "2024-05-10"
+        }},
+        {{
+            "title": "STF decide que estados podem impor restrições a não vacinados",
+            "snippet": "O Supremo Tribunal Federal autorizou que estados e municípios adotem medidas restritivas para incentivar a vacinação, mas não tornem a vacina obrigatória em termos penais.",
+            "date": "2021-12-17"
+        }}
+    ],
+    "vacinação e restrições": [
+        {{
+            "title": "Estados brasileiros podem impor restrições a não vacinados, diz STF",
+            "snippet": "O STF confirmou que estados e municípios têm autonomia para criar restrições para incentivar a vacinação contra a covid-19.",
+            "date": "2021-12-17"
+        }},
+        {{
+            "title": "Ministério da Saúde reforça que vacinação é voluntária",
+            "snippet": "Vacinação segue sendo um ato voluntário e sem penalidades para quem não se vacinar, segundo o Ministério da Saúde.",
+            "date": "2024-05-10"
+        }}
+    ]
+    }},
+    "urls": [
+        "url1",
+        "..."
+    ]
+}}

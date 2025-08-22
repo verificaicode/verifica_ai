@@ -2,7 +2,7 @@ from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 import urllib3
 import httpx
-from verifica_ai.verifica_ai.verifai_types import PostType
+from verifica_ai.types import PostType
 import requests
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

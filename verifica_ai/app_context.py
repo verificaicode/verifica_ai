@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import instaloader
 from google import genai
 from google.genai.types import GoogleSearch,  Tool
-from verifica_ai.verifica_ai.verifai_types import PostContent
+from verifica_ai.verifica_ai.types import PostContent
 
 # Carrega variáveis de ambiente
 load_dotenv()

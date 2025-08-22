@@ -1,5 +1,4 @@
 import asyncio
-import time
 import httpx
 from quart import Quart, request, send_file
 from quart_cors import cors

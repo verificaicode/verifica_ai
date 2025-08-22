@@ -71,13 +71,18 @@ class InputHandler():
         await self.response_user(user_received, sender_id, "Estamos analisando o conteúdo. Pode demorar alguns segundos...")
 
         try:
-            handle_gemini_api = HandleGeminiAPI(self.genai_client, self.model, self.google_search_tool)
-            pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH, handle_gemini_api).get_result(sender_id, message, text)
-            processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
-            pos_processor_result = PosProcessor().get_result(processor_result)
+            try:
+                handle_gemini_api = HandleGeminiAPI(self.genai_client, self.model, self.google_search_tool)
+                pre_processor_result = await PreProcessor(self.instaloader_context, self.posts, self.TEMP_PATH, handle_gemini_api).get_result(sender_id, message, text)
+                processor_result = await Processor(handle_gemini_api).get_result(pre_processor_result)
+                pos_processor_result = PosProcessor().get_result(processor_result)
 
-            if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
-                await self.response_user(user_received, sender_id, pos_processor_result)
+                if not pre_processor_result.object_if_is_old_message or (pre_processor_result.object_if_is_old_message and self.posts[sender_id]["might_send_response_to_user"]):
+                    await self.response_user(user_received, sender_id, pos_processor_result)
+            
+            except ValueError:
+                traceback.print_exc()
+                raise VerificaAiException.InternalError()
 
         # Tratamento de erros
         except VerificaAiException.GeminiQuotaExceeded:
@@ -111,7 +116,7 @@ class InputHandler():
         except VerificaAiException.TypeUnsupported:
             await self.response_user(user_received, sender_id, "Tipo de postagem inválida. Verifique-a e tente novamente.")
             return
-                
+        
     async def response_user(self, user_received, sender_id, message_text):
         if user_received == "instagram":
             self.send_message_to_user_via_instagram(sender_id, message_text)

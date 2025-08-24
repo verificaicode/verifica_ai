@@ -38,16 +38,20 @@ class InputHandler():
         if not ("message" in messaging_event):
             return None
         
-        posts: dict[str,PostContent] = self.posts
-        sended_timestamp = messaging_event["timestamp"]
+        message = messaging_event["message"]
+        
+        posts: list[dict[str,PostContent]] = self.posts
+        message_id = message["mid"]
 
+        # Verifica se esse usuário já enviou alguma mensagem anteriormente
         if sender_id in posts:
-            if posts[sender_id].sended_timestamp == sended_timestamp:
+            # Se existir alguma mensagem já analisada com o mesmo id, para de executar
+            exists_post_with_current_mid = any(post.message_id == message_id for post in posts[sender_id])
+            if exists_post_with_current_mid:
                 return
         
-        message = messaging_event["message"]
         text = message["text"] if "text" in message else ""
-        message["sended_timestamp"] = sended_timestamp
+        message["message_id"] = message_id
 
         await self.process_input("instagram", sender_id, message, text)
 

@@ -90,7 +90,7 @@ class PostContent:
     :type caption: str
 
     :param data: Data da publicação da postagem.
-    :type data: datetime
+    :type data: datetime or None
 
     :param object_if_is_old_message: Se a mensagem atual se referir a algum post anterior, contém um dicionário com os dados desse post.
     :type object_if_is_old_message: dict or None
@@ -104,8 +104,8 @@ class PostContent:
     :param text: Texto da mensagem enviada pelo usuário.
     :type text: str or None
 
-    :param sended_timestamp: Timestamp contendo a data de envio da mensagem.
-    :type sended_timestamp: int
+    :param message_id: Id da mensagem enviada.
+    :type message_id: str
     """
         
     post_type: PostType
@@ -115,9 +115,9 @@ class PostContent:
     file_src: Optional[str]
     filename: Optional[str]
     caption: str
-    data: datetime
+    data: Optional[datetime]
     object_if_is_old_message: Optional[dict]
     might_send_response_to_user: bool
     url: Optional[str]
     text: Optional[str]
-    sended_timestamp: int
+    message_id: str

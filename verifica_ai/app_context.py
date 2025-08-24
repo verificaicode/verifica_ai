@@ -11,6 +11,7 @@ load_dotenv()
 
 class AppContext():
     def __init__(self):
+        # Contém o histórico de mensagens enviadas
         self.posts: dict[str,PostContent] = {}
 
         # Definição de constantes

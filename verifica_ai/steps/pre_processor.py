@@ -37,17 +37,53 @@ class PreProcessor:
             raise VerificaAiException.TypeUnsupported()
 
         attachment_message_type = AttachmentMessageType.NEW_MESSAGE if "attachments" in message else AttachmentMessageType.NONE
-        sended_timestamp = message["sended_timestamp"]
-        post_content = None
+        message_id = message["message_id"]
+        index = 0
+
+        # Armazena um PostContent contendo o message_id atual no histórico de mensagens para caso a Graph API envie a mesma mensagem rapidamente
+        if sender_id in self.posts:
+            index = len(self.posts[sender_id])
+            self.posts[sender_id].append(PostContent(
+                post_type=PostType.MEDIA_TYPE_INDETERMINED,
+                share_type=ShareType.NOT_SHARED,
+                shortcode="",
+                post=None,
+                file_src=None,
+                filename=None,
+                caption="",
+                data=None,
+                object_if_is_old_message=None,
+                might_send_response_to_user=True,
+                url=None,
+                text=None,
+                message_id=message_id
+            ))
+
+        else:
+            self.posts[sender_id] = [PostContent(
+                post_type=PostType.MEDIA_TYPE_INDETERMINED,
+                share_type=ShareType.NOT_SHARED,
+                shortcode="",
+                post=None,
+                file_src=None,
+                filename=None,
+                caption="",
+                data=None,
+                object_if_is_old_message=None,
+                might_send_response_to_user=True,
+                url=None,
+                text=None,
+                message_id=message_id
+            )]
 
         if attachment_message_type == AttachmentMessageType.NONE:
             try:
-                # Se o texto da mensagem for o link de uma postagem:
+                # Se o texto da mensagem for o link de uma postagem
                 if text.startswith("https://www.instagram.com/p/") or text.startswith("https://www.instagram.com/reel/"):
                     shortcode = get_shortcode_from_url(text)
                     post = Post.from_shortcode(self.instaloader_context.context, shortcode)
                     caption = post.caption or ""
-                    post_content = PostContent(
+                    self.posts[sender_id][index] = PostContent(
                         post_type=PostType.MEDIA_TYPE_INDETERMINED,
                         share_type=ShareType.NOT_SHARED,
                         shortcode=shortcode,
@@ -60,10 +96,10 @@ class PreProcessor:
                         might_send_response_to_user=True,
                         url=text,
                         text=None,
-                        sended_timestamp=sended_timestamp
+                        message_id=message_id
                     )
 
-                # Se o texto da mensagem for o link de uma postagem compartilhada:
+                # Se o texto da mensagem for o link de uma postagem compartilhada
                 elif text.startswith("https://www.instagram.com/share/"):
                     async with httpx.AsyncClient(follow_redirects=True) as client:
                         response = await client.get(text)
@@ -72,7 +108,7 @@ class PreProcessor:
                     shortcode = get_shortcode_from_url(url)
                     post = Post.from_shortcode(self.instaloader_context.context, shortcode)
                     caption = post.caption or ""
-                    post_content = PostContent(
+                    self.posts[sender_id][index] = PostContent(
                         post_type=PostType.MEDIA_TYPE_INDETERMINED,
                         share_type=ShareType.SHARED_VIA_LINK,
                         shortcode=shortcode,
@@ -85,25 +121,25 @@ class PreProcessor:
                         might_send_response_to_user=True,
                         url=text,
                         text=None,
-                        sended_timestamp=sended_timestamp
+                        message_id=message_id
                     )
 
-                # Se o texto da mensagem não contiver link:
+                # Se o texto da mensagem não contiver link
                 else:
-                    # Se o usuário tiver enviado algum post anteriormente:
-                    if sender_id in self.posts:
-                        # Prompt usado para identificar referência de posts na mensagem:
+                    # Se a quantidade de mensagens enviadas pelo usuário atual for maior que 1 (pois a mensagem atual já está armazenada)
+                    if len(self.posts[sender_id]) > 1:
+                        # Prompt usado para identificar referência de posts na mensagem
                         response_text, _ = await self.generate_response([
                             f'Analise a mensagem: "{text}". Me retorne apenas "Sim" se a mensagem se refere a algo anterior, caso contrário "Não".'
                         ])
 
-                        # Se o texto da mensagem se referir a algum post enviado anteriormente:
+                        # Se o texto da mensagem se referir a algum post enviado anteriormente
                         if response_text.startswith("Sim"):
                             attachment_message_type = AttachmentMessageType.OLD_MESSAGE
-                            self.posts[sender_id].might_send_response_to_user = False
+                            self.posts[sender_id][-2].might_send_response_to_user = False
 
                         else:
-                            post_content = PostContent(
+                            self.posts[sender_id][index] = PostContent(
                                 post_type=PostType.TEXT,
                                 share_type=ShareType.NOT_SHARED,
                                 shortcode=None,
@@ -116,10 +152,10 @@ class PreProcessor:
                                 might_send_response_to_user=True,
                                 url=None,
                                 text=text,
-                                sended_timestamp=sended_timestamp
+                                message_id=message_id
                             )
                     else:
-                        post_content = PostContent(
+                        self.posts[sender_id][index] = PostContent(
                             post_type=PostType.TEXT,
                             share_type=ShareType.NOT_SHARED,
                             shortcode=None,
@@ -132,7 +168,7 @@ class PreProcessor:
                             might_send_response_to_user=True,
                             url=None,
                             text=text,
-                            sended_timestamp=sended_timestamp
+                            message_id=message_id
                         )
 
             except BadResponseException:
@@ -147,37 +183,37 @@ class PreProcessor:
                 "text": text
             } if attachment_message_type == AttachmentMessageType.OLD_MESSAGE else None
 
-            message_type = self.posts[sender_id].type if object_if_is_old_message else message["attachments"][0]["type"]
-            file_src = self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
+            message_type = self.posts[sender_id][-2].type if object_if_is_old_message else message["attachments"][0]["type"]
+            file_src = self.posts[sender_id][-2].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"]
 
             data, post_type = await handle_reel_info(file_src)
 
-            # Se for um reels compartilhado pelo aplicativo:
+            # Se for um reels compartilhado pelo aplicativo
             if message_type == "ig_reel":
-                post_content = PostContent(
+                self.posts[sender_id][index] = PostContent(
                     post_type=post_type,
                     share_type=ShareType.SHARED_VIA_APP,
-                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["reel_video_id"],
+                    shortcode=self.posts[sender_id][-2].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["reel_video_id"],
                     post=None,
                     file_src=file_src,
                     filename=None,
-                    caption=self.posts[sender_id].caption if object_if_is_old_message else message["attachments"][0]["payload"].get("title", ""),
+                    caption=self.posts[sender_id][-2].caption if object_if_is_old_message else message["attachments"][0]["payload"].get("title", ""),
                     data=data,
                     object_if_is_old_message=object_if_is_old_message,
                     might_send_response_to_user=True,
                     url=None,
                     text=None,
-                    sended_timestamp=sended_timestamp
+                    message_id=message_id
                 )
 
-            # Se for um video enviado da galeria:
+            # Se for um video enviado da galeria
             elif message_type == "video":
-                post_content = PostContent(
+                self.posts[sender_id][index] = PostContent(
                     post_type=PostType.VIDEO,
                     share_type=ShareType.NOT_SHARED,
-                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
+                    shortcode=self.posts[sender_id][-2].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
-                    file_src=self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    file_src=self.posts[sender_id][-2].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
                     filename=None,
                     caption="",
                     data=data,
@@ -185,17 +221,17 @@ class PreProcessor:
                     might_send_response_to_user=True,
                     url=None,
                     text=None,
-                    sended_timestamp=sended_timestamp
+                    message_id=message_id
                 )
 
             # Se for uma imagem enviada da galeria
             else:
-                post_content = PostContent(
+                self.posts[sender_id][index] = PostContent(
                     post_type=PostType.IMAGE,
                     share_type=ShareType.SHARED_VIA_APP,
-                    shortcode=self.posts[sender_id].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
+                    shortcode=self.posts[sender_id][-2].shortcode if object_if_is_old_message else message["attachments"][0]["payload"]["url"].split("=")[1].split("&")[0],
                     post=None,
-                    file_src=self.posts[sender_id].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
+                    file_src=self.posts[sender_id][-2].file_src if object_if_is_old_message else message["attachments"][0]["payload"]["url"],
                     filename=None,
                     caption="",
                     data=data,
@@ -203,19 +239,16 @@ class PreProcessor:
                     might_send_response_to_user=True,
                     url=None,
                     text=None,
-                    sended_timestamp=sended_timestamp
+                    message_id=message_id
                 )
 
-        if attachment_message_type == AttachmentMessageType.NEW_MESSAGE:
-            self.posts[sender_id] = post_content
-
         # Se for video ou imagem:
-        if post_content.post_type in [ PostType.IMAGE, PostType.VIDEO, PostType.MEDIA_TYPE_INDETERMINED ]: 
-            filename, post_type = await self.handle_post_file(post_content)
-            post_content.filename = filename
-            post_content.post_type = post_type
+        if self.posts[sender_id][index].post_type in [ PostType.IMAGE, PostType.VIDEO, PostType.MEDIA_TYPE_INDETERMINED ]: 
+            filename, post_type = await self.handle_post_file(self.posts[sender_id][index])
+            self.posts[sender_id][index].filename = filename
+            self.posts[sender_id][index].post_type = post_type
 
-        return post_content
+        return self.posts[sender_id][index]
 
     async def handle_post_file(self, post_content: PostContent) -> tuple[str, PostType]:
         """
@@ -311,7 +344,7 @@ class PreProcessor:
                             raise VerificaAiException.InvalidLink()
 
         # Repassa o erro para o tratamento de erros principal
-        except VerificaAiException.InvalidLink():
+        except VerificaAiException.InvalidLink:
             raise
 
         except Exception as e:

@@ -1,5 +1,5 @@
 import os
-from verifica_ai.server import Server
+from src.server import Server
 try:
     server = Server()
 except KeyboardInterrupt:

@@ -1,205 +1,168 @@
 # Verifica AI
 
-&nbsp;&nbsp;&nbsp;&nbsp;O Verifica AI é um sistema automatizado para análise e verificação de postagens do Instagram. Utilizando a API Gemini para inteligência artificial e a biblioteca Instaloader para coleta de dados, o projeto identifica a veracidade do conteúdo de acordo com os [**tipos de notícia**](#tipos-de-notícia) e fornece uma análise detalhada com fontes ordenadas por grau de confiança.
+Verifica AI is an automated system for the analysis and verification of Instagram posts. Leveraging the Gemini API for artificial intelligence and the Instaloader library for data collection, the system assesses content veracity according to predefined misinformation categories and provides a detailed analysis with sources ranked by reliability.
 
 ---
 
-## Tipos de notícia
-
-O sistema identifica 7 tipos principais de notícia:
-
-- **Fato:** Afirmativa baseada em informações verdadeiras, sustentada por evidências verificáveis e fontes confiáveis.
-
-- **Informações insuficientes:** A postagem apresenta dados que não podem ser confirmados ou refutados devido à falta de contexto, detalhes ou evidências disponíveis no momento da análise.
-
-- **Sátira ou paródia:** Não têm a intenção de causar danos, mas podem enganar. Embora sejam formas legítimas de expressão artística, podem ser confundidas com fatos reais em ambientes digitais onde as informações circulam rapidamente. Entram nessa classificação os memese posts com intenção de divertir o leitor, mostrando informações absurdas ou claramente fora de contexto, ambas inofensivas.
-
-- **Conexão falsa:** Ocorre quando títulos, imagens ou legendas não têm relação com o conteúdo da matéria. Essa prática visa atrair cliques e engajamento, mas engana o leitor ao apresentar informações desconectadas.
-
-- **Conteúdo enganoso:** Uso distorcido de informações verdadeiras para manipular a interpretação dos fatos. Pode envolver a seleção parcial de dados, estatísticas ou citações, bem como o uso de imagens de forma a induzir a erro.
-
-- **Contexto falso:** Informações verdadeiras são retiradas de seu contexto original e reapresentadas de maneira enganosa.
-
-- **Conteúdo impostor:** Ocorre quando alguém se passa por uma fonte confiável (instituições, veículos de imprensa ou pessoas públicas) para dar credibilidade a informações falsas.
-
-- **Conteúdo manipulado:** Conteúdo genuíno (como vídeos, imagens ou documentos) é alterado de forma intencional para enganar.
-
-- **Conteúdo fabricado:** Todo o conteúdo é falso, criado do zero. Pode ser textual, visual ou multimodal. Para analisar esse tipo de conteúdo, é útil considerar os elementos da desordem informacional: o agente (quem cria, produz ou distribui), a mensagem e os intérpretes. É essencial entender as motivações dos envolvidos e os tipos de mensagens disseminadas.
-
+📊 Results
+Accuracy: 97%
+Precision: 98%
+Recall: 98%
 
 ---
 
-## Funcionalidades
+🎯 Problem and Motivation
 
-- Processa mensagens de texto, imagens e vídeos compartilhados via Instagram.
-- Faz análise detalhada do conteúdo com auxílio de LLM (Large Language Models) Gemini.
-- Realiza buscas online para validar informações temporais e contextuais.
-- Classifica o conteúdo como fato, fake ou informações insuficientes.
-- Envia respostas automáticas para usuários via Instagram Messenger.
-- Suporta múltiplas mídias em postagens (sidecar).
+The rapid dissemination of information on social media has significantly intensified the spread of misinformation. Platforms such as Instagram present specific challenges for its detection, including the presence of multimodal content and the high velocity of information sharing.
+
+In this context, Verifica AI was developed as an automated solution designed to analyze, classify, and contextualize potentially misleading content, contributing to the mitigation of the impacts of misinformation.
 
 ---
 
-## Tecnologias Utilizadas
+🗂️ Dataset
+Total samples: 200 posts
+Distribution:
+150 truthful contents
+50 contents classified as misinformation
+Source: public Instagram posts
+
+---
+
+🧪 Evaluation
+
+The system was evaluated based on the following metrics:
+
+Accuracy
+Precision
+Recall
+Sensitivity
+
+⚠️ Error Analysis
+
+Most common errors identified:
+
+Satirical content classified as factual
+Difficulty in classifying AI-generated content
+⚠️ Limitations
+Small dataset size
+Dependence on external APIs (Gemini, Instagram)
+Potential bias in the analyzed sources
+
+---
+
+## Types of Content
+
+The system identifies the following main categories of content:
+
+- **Fact:** A statement based on truthful information, supported by verifiable evidence and reliable sources.
+
+- **Insufficient information:** The post contains data that cannot be confirmed or refuted due to a lack of context, details, or available evidence at the time of analysis.
+
+- **Satire or parody:** These do not intend to cause harm but may mislead. Although they are legitimate forms of artistic expression, they can be mistaken for factual content in digital environments where information spreads rapidly. This category includes memes and posts designed to entertain, often presenting absurd or clearly out-of-context information in a harmless way.
+
+- **False connection:** Occurs when headlines, images, or captions do not correspond to the actual content. This practice aims to attract clicks and engagement while misleading the audience.
+
+- **Misleading content:** The misuse of truthful information to manipulate interpretation. It may involve selective presentation of data, statistics, or quotations, as well as the use of images in a misleading manner.
+
+- **False context:** Genuine information is removed from its original context and presented in a misleading way.
+
+- **Imposter content:** Occurs when someone impersonates a reliable source (such as institutions, news outlets, or public figures) to lend credibility to false information.
+
+- **Manipulated content:** Genuine content (such as videos, images, or documents) is intentionally altered to deceive.
+
+- **Fabricated content:** Entirely false content created from scratch. It may be textual, visual, or multimodal. Analyzing this type of content involves considering elements of information disorder: the agent (who creates or distributes it), the message, and the interpreters. Understanding the motivations and types of messages being disseminated is essential.
+
+---
+
+## Features
+
+- Processes text, images, and videos shared via Instagram.
+- Performs detailed content analysis using Gemini Large Language Models (LLMs).
+- Conducts online searches to validate temporal and contextual information.
+- Classifies content as fact, fake, or insufficient information.
+- Sends automated responses to users via Instagram Messenger.
+- Supports multiple media items in posts (sidecar).
+
+---
+
+## Technologies Used
 
 - Python 3.11
-- Instaloader (para baixar conteúdo do Instagram)
-- Google Gemini API (modelo de linguagem para análise e geração de texto)
-- Requests (para requisições HTTP)
-- python-dotenv (para gerenciar variáveis de ambiente)
-- APIs do Instagram Graph para mensagens e webhooks
+- Instaloader (for downloading Instagram content)
+- Google Gemini API (language model for analysis and text generation)
+- Requests (for HTTP requests)
+- python-dotenv (for environment variable management)
+- Instagram Graph API (for messaging and webhooks)
 
 ---
-## Fluxograma
+
+## Flowchart
 ```mermaid
 flowchart TD
     U1(User)
     B(Verifica AI)
-    T1(Extrai texto)
-    T2(Extrai imagem, legenda, data)
-    T3(Extrai vídeo, legenda, data)
+    T1(Extract text)
+    T2(Extract image, caption, date)
+    T3(Extract video, caption, date)
     EG(GEMINI)
-    C1(Classificação 1)
-    D1{Fato ou Indeterminado?}
-    C2(Classificação 2)
+    C1(Classification 1)
+    D1{Fact or Undetermined?}
+    C2(Classification 2)
     U2(User)
 
-    U1 --> |mensagem| B
+    U1 --> |message| B
 
-    B --> |texto| T1
-    B --> |imagem| T2
+    B --> |text| T1
+    B --> |image| T2
     B --> |video| T3
 
     T1 --> |API| EG
     T2 --> |API| EG
     T3 --> |API| EG
 
-    EG --> |modelo 1| C1
+    EG --> |model 1| C1
     C1 --> D1
 
-    D1 --> |Sim| U2
-    D1 --> |Não: Desinformação| C2
+    D1 --> |Yes| U2
+    D1 --> |No: Misinformation| C2
     C2 --> U2
+Flow Description
 
-%% class Text1 myStyle;
+User: Sends a message that may contain text, image, or video.
 
-%% classDef myStyle fill:#fff, stroke:blue, stroke-width:2px;
-```
+Verifica AI: Receives the message and, in an automated and transparent manner, extracts relevant data (text, caption, date, image, or video) and forwards it for analysis.
 
-### Descrição do fluxo
+Artificial Intelligence Analysis (GEMINI):
+The AI performs a primary classification, identifying whether the content is:
 
-**Usuário:** Envia uma mensagem que pode conter texto, imagem ou vídeo.
+Fact
+Undetermined
+Misinformation
 
-**Verifica AI:** Recebe a mensagem e, de forma automática e transparente para o usuário, extrai os dados relevantes (texto, legenda, data, imagem ou vídeo) e os envia para análise.
+If the content is classified as fact or undetermined, Verifica AI immediately returns the result to the user.
 
-**Análise com Inteligência Artificial (GEMINI):**
-A IA realiza uma classificação primária, identificando se o conteúdo é:
-- Fato
-- Indeterminado
-- Desinformação
+If the content is classified as misinformation, a second analysis is performed to determine the specific type of misinformation, among the following categories:
 
-&nbsp;&nbsp;&nbsp;&nbsp;Se o conteúdo for fato ou indeterminado, o Verifica AI retorna imediatamente o resultado ao usuário.
+Satire or parody
+False connection
+Misleading content
+False context
+Imposter content
+Manipulated content
+Fabricated content
 
-&nbsp;&nbsp;&nbsp;&nbsp;Se o conteúdo for classificado como desinformação, uma segunda análise é realizada para identificar o tipo específico de desinformação, entre as seguintes categorias:
+After this step, the final result is sent to the user, who only sees the final diagnosis without access to intermediate steps.
 
-- Sátira ou paródia
-- Conexão falsa
-- Conteúdo enganoso
-- Contexto falso
-- Conteúdo impostor
-- Conteúdo manipulado
-- Conteúdo fabricado
-
-&nbsp;&nbsp;&nbsp;&nbsp;Após essa etapa, o resultado final é enviado ao usuário, que vê apenas o diagnóstico final, sem ter acesso às etapas intermediárias.
+Class Diagram
+Sequence Diagram
 
 ---
-## Diagrama de classes
-```mermaid
-classDiagram
-  class AppContext{
-    +models
-    +posts
-    +instaloader_context
-    +TEMP_PATH
-    +USERNAME
-    +PASSWORD
-    +API_GEMINI_KEY
-    +PAGE_ACCESS_TOKEN
-    +DEBUG
-    +VERIFY_TOKEN
-    +VERIFICA_AI_SERVER
-    +VERIFICA_AI_PROXY
-  }
 
-  class Server {
-    +process()
-    +connect_to_server()
-    +connect()
-    +disconnect()
-    +resgister_routes()
-    +webhook_socketio()
-    +webhook_flask()
-    +loop()
-    +run_app_flask()
-    +run_flask_server()
-  }
+👥 Team
 
-  class InputHandler {
-    +process_webhook_message()
-    +process_input()
-  }
+Developed by:
+- Aquilis Alves de Melo Oliveira
+- Isabella dos Santos Caruso
+- Vítor Emanuel da Silva Rodrigues
 
-  class ContentExtractor {
-    +instaloader_context
-    +posts
-    +get_content_object()
-  }
-
-  class Uploader {
-    +file_uploader()
-  }
-
-  class ResponseProcessor {
-    +client
-    +models
-    +content_categories
-    +type_fake_name_classes
-    +get_result_from_process()
-  }
-
-  class GeminiResponseGenerator {
-    +generate_response()
-    +get_gemini_response()
-  }
-
-  Server --> AppContext : «2» define constantes
-  Server --> InputHandler
-  InputHandler --> ContentExtractor : «3» extrai conteúdo
-  InputHandler --> Uploader        : «4» upload de mídia para servidor GEMINI
-  InputHandler --> ResponseProcessor : «5» processa a resposta gerada pela IA
-  ResponseProcessor --> GeminiResponseGenerator : «5» gera resposta
-```
-
-## Diagrama de sequência
-
-```mermaid
-sequenceDiagram
-  participant User
-  participant Server
-  participant InputHandler
-  participant ContentExtractor
-  participant Uploader
-  participant ResponseProcessor
-  participant GeminiResponseGenerator
-
-  User->>Server: envia mensagem (webhook)
-  Server->>InputHandler: process_input()
-  InputHandler->>ContentExtractor: get_content_object()
-  InputHandler->>Uploader: file_uploader()
-  InputHandler->>ResponseProcessor: get_result_from_process()
-  ResponseProcessor->>GeminiResponseGenerator: get_gemini_response()
-  GeminiResponseGenerator-->>ResponseProcessor: resposta
-  ResponseProcessor-->>InputHandler: resultado final
-  InputHandler-->>Server: resposta processada
-  Server-->>User: envia resposta
-```
+Core maintainer: @vitor-research

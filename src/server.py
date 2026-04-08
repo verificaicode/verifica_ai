@@ -6,9 +6,9 @@ from socketio import ASGIApp, AsyncServer
 from socketio import AsyncClient as AsyncClientSocketIO
 from socketio.exceptions import ConnectionError
 import uvicorn
-from verifica_ai.app_context import AppContext
-from verifica_ai.input_handler import InputHandler
-from verifica_ai.verify_links import VerifyLinks
+from src.app_context import AppContext
+from src.input_handler import InputHandler
+from src.verify_links import VerifyLinks
 
 class Server(AppContext, InputHandler, VerifyLinks):
     """

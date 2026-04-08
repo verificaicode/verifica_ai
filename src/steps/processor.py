@@ -2,10 +2,10 @@ from datetime import datetime
 from json.decoder import JSONDecodeError
 import traceback
 from google.genai.types import File
-from verifica_ai.handle_gemini_api import HandleGeminiAPI
-from verifica_ai.exceptions import VerificaAiException
-from verifica_ai.types import DetalhedFont, PostContent, PostType
-from verifica_ai.utils import insert_into_prompt
+from src.handle_gemini_api import HandleGeminiAPI
+from src.exceptions import VerificaAiException
+from src.types import DetalhedFont, PostContent, PostType
+from src.utils import insert_into_prompt
 
 class Processor():
     """

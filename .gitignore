@@ -4,6 +4,8 @@ tmp/files/
 !files/.gitkeep
 .env
 
+public/
+
 registro/hash.txt
 registro/verifica_ai.zip
 

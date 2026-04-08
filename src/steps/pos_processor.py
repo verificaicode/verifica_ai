@@ -1,4 +1,4 @@
-from verifica_ai.types import DetalhedFont
+from src.types import DetalhedFont
 
 class PosProcessor:
     """

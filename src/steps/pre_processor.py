@@ -3,10 +3,10 @@ from datetime import datetime
 import httpx
 from instaloader import Post
 from instaloader.exceptions import BadResponseException, ConnectionException
-from verifica_ai.exceptions import VerificaAiException
-from verifica_ai.handle_gemini_api import HandleGeminiAPI
-from verifica_ai.types import AttachmentMessageType, PostContent, PostType, ShareType
-from verifica_ai.utils import get_img_index_from_url, get_shortcode_from_url, handle_reel_info
+from src.exceptions import VerificaAiException
+from src.handle_gemini_api import HandleGeminiAPI
+from src.types import AttachmentMessageType, PostContent, PostType, ShareType
+from src.utils import get_img_index_from_url, get_shortcode_from_url, handle_reel_info
 
 class PreProcessor:
     """

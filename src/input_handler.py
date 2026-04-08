@@ -1,11 +1,11 @@
 import requests
 import traceback
-from verifica_ai.exceptions import VerificaAiException
-from verifica_ai.handle_gemini_api import HandleGeminiAPI
-from verifica_ai.steps.pre_processor import PreProcessor
-from verifica_ai.steps.processor import Processor
-from verifica_ai.steps.pos_processor import PosProcessor
-from verifica_ai.types import PostContent
+from src.exceptions import VerificaAiException
+from src.handle_gemini_api import HandleGeminiAPI
+from src.steps.pre_processor import PreProcessor
+from src.steps.processor import Processor
+from src.steps.pos_processor import PosProcessor
+from src.types import PostContent
 
 class InputHandler():
     """

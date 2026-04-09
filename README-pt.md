@@ -1,5 +1,7 @@
 # Verifica AI
 
+📄 **Artigo:** [Leia o artigo](docs/artigo-febrace-2025.pdf)
+
 🌐 Idioma:
 - 🇧🇷 [Português](atual)
 - 🇺🇸 [English](README.md)
@@ -26,35 +28,32 @@ Recall: 98%
 
 🗂️ Dataset
 
-Total de amostras: 200 postagens
-Distribuição:
-150 conteúdos verídicos
-50 conteúdos classificados como desinformação
-Origem: postagens públicas do Instagram
+- Total de amostras: 200 postagens  
+- Distribuição: 150 conteúdos verídicos e 50 conteúdos classificados como desinformação  
+- Origem: postagens públicas do Instagram
 
---
+---
 
 🧪 Avaliação
 
-O sistema foi avaliado com base nas seguintes métricas:
+O sistema foi avaliado com base nas seguintes métricas:  
 
-Acurácia
-Precisão
-Recall
-Sensibilidade
+- Acurácia  
+- Precisão  
+- Recall  
 
 ⚠️ Análise de erros
 
 Erros mais comuns identificados:
 
-Conteúdos satíricos classificados como factuais
-Dificuldade na classificação de conteúdos gerados por IA
+- Conteúdos satíricos classificados como factuais  
+- Dificuldade na classificação de conteúdos gerados por IA  
 
 ⚠️ Limitações
 
-Tamanho reduzido do dataset
-Dependência de APIs externas (Gemini, Instagram)
-Possível viés nas fontes analisadas
+- Tamanho reduzido do dataset  
+- Dependência de APIs externas (Gemini, Instagram)  
+- Possível viés nas fontes analisadas  
 
 --
 

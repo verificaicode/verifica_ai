@@ -1,5 +1,7 @@
 # Verifica AI
 
+📄 **Article:** [Read the paper](docs/artigo-febrace-2025.pdf)
+
 🌐 Language:
 - 🇧🇷 [Português](README-pt.md)
 - 🇺🇸 [English](current)
@@ -24,33 +26,32 @@ Recall: 98%
 ---
 
 🗂️ Dataset
-Total samples: 200 posts
-Distribution:
-150 truthful contents
-50 contents classified as misinformation
-Source: public Instagram posts
+- Total samples: 200 posts  
+- Distribution: 150 truthful contents and 50 contents classified as misinformation  
+- Source: public Instagram posts
 
 ---
 
 🧪 Evaluation
 
-The system was evaluated based on the following metrics:
+The system was evaluated based on the following metrics:  
 
-Accuracy
-Precision
-Recall
-Sensitivity
+- Accuracy  
+- Precision  
+- Recall  
 
 ⚠️ Error Analysis
 
 Most common errors identified:
 
-Satirical content classified as factual
-Difficulty in classifying AI-generated content
+- Satirical content classified as factual  
+- Difficulty in classifying AI-generated content  
+
 ⚠️ Limitations
-Small dataset size
-Dependence on external APIs (Gemini, Instagram)
-Potential bias in the analyzed sources
+
+- Small dataset size  
+- Dependence on external APIs (Gemini, Instagram)  
+- Potential bias in the analyzed sources  
 
 ---
 

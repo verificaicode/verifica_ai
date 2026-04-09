@@ -1,5 +1,15 @@
 # Verifica AI
 
+## 📄 Software Registration
+
+- Registration number: BR512026001679-7 
+- Institution: INPI (Brazil)  
+- Status: Registered  
+
+This repository contains the official implementation of the registered software.
+
+---
+
 📄 **Article:** [Read the paper](https://verificaicode.github.io/verifica_ai/artigo-febrace-2025.pdf)
 
 🌐 Language:

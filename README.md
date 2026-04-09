@@ -1,6 +1,6 @@
 # Verifica AI
 
-🌐 Idioma:
+🌐 Language:
 - 🇧🇷 [Português](README-pt.md)
 - 🇺🇸 [English](current)
 

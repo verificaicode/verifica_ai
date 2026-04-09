@@ -11,8 +11,8 @@
 ---
 
 📊 Results
-- Acurácia: 97%
-- Precisão: 98%
+- Accuracy: 97%
+- Precision: 98%
 - Recall: 98%
 
 ---

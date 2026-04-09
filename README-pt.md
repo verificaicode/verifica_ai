@@ -3,7 +3,7 @@
 📄 **Artigo:** [Leia o artigo](https://verificaicode.github.io/verifica_ai/artigo-febrace-2025.pdf)
 
 🌐 Idioma:
-- 🇧🇷 [Português](atual)
+- 🇧🇷 Português (atual)
 - 🇺🇸 [English](README.md)
 
 &nbsp;&nbsp;&nbsp;&nbsp;O Verifica AI é um sistema automatizado para análise e verificação de postagens do Instagram. Utilizando a API Gemini para inteligência artificial e a biblioteca Instaloader para coleta de dados, o projeto identifica a veracidade do conteúdo de acordo com os [**tipos de notícia**](#tipos-de-notícia) e fornece uma análise detalhada com fontes ordenadas por grau de confiança.

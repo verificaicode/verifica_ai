@@ -4,7 +4,7 @@
 
 🌐 Language:
 - 🇧🇷 [Português](README-pt.md)
-- 🇺🇸 [English](current)
+- 🇺🇸 English (current)
 
 &nbsp;&nbsp;&nbsp;&nbsp;Verifica AI is an automated system for the analysis and verification of Instagram posts. Leveraging the Gemini API for artificial intelligence and the Instaloader library for data collection, the system assesses content veracity according to predefined misinformation categories and provides a detailed analysis with sources ranked by reliability.
 

@@ -36,14 +36,10 @@ This repository contains the official implementation of the registered software.
 
 &nbsp;&nbsp;&nbsp;&nbsp;In this context, Verifica AI was developed as an automated solution designed to analyze, classify, and contextualize potentially misleading content, contributing to the mitigation of the impacts of misinformation.
 
----
-
 🗂️ Dataset
 - Total samples: 200 posts  
 - Distribution: 150 truthful contents and 50 contents classified as misinformation  
 - Source: public Instagram posts
-
----
 
 🧪 Evaluation
 

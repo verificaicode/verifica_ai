@@ -37,15 +37,12 @@ Esse repositório contém a implementação oficial do software registrado.
 
 &nbsp;&nbsp;&nbsp;&nbsp;Nesse contexto, o Verifica AI foi desenvolvido para fornecer uma solução automatizada capaz de analisar, classificar e contextualizar potenciais conteúdos de desinformação, contribuindo com a mitigação dos impactos da desinformação.
 
----
-
 🗂️ Dataset
 
 - Total de amostras: 200 postagens  
 - Distribuição: 150 conteúdos verídicos e 50 conteúdos classificados como desinformação  
 - Origem: postagens públicas do Instagram
 
----
 
 🧪 Avaliação
 

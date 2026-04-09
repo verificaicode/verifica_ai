@@ -14,7 +14,7 @@
 
 - Acurácia: 97%
 - Precisão: 98%
-- Recall: 98%
+- Sensibilidade: 98%
 
 ---
 
@@ -40,7 +40,7 @@ O sistema foi avaliado com base nas seguintes métricas:
 
 - Acurácia: proporção de prvisões corretas
 - Precision: razão entre verdadeiros positivos e previsões positivas
-- Recall: razão entre verdadeiros positivos e positivos reais
+- Sensibilidade: razão entre verdadeiros positivos e positivos reais
 
 ⚠️ Análise de erros
 

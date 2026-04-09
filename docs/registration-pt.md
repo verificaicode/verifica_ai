@@ -9,7 +9,7 @@
 - Nome: Verifica AI  
 - Número de registro: BR512026001679-7  
 - Instituição: INPI (Brasil)  
-- Ano: 2025  
+- Ano: 2026
 
 ## Descrição
 

@@ -9,7 +9,7 @@
 - Name: Verifica AI  
 - Registration number: BR512026001679-7
 - Institution: INPI (Brazil)
-- Year: 2025  
+- Year: 2026
 
 ## Description
 
@@ -21,4 +21,4 @@ This repository contains the official implementation of the registered software.
 
 ## Official Record
 
-[Disponible here](software-registration.pdf)
+[Available here](software-registration.pdf)

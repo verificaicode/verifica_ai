@@ -131,8 +131,6 @@ flowchart TD
     D1 --> |Yes| U2
     D1 --> |No: Misinformation| C2
     C2 --> U2
-    
-%% class Text1 myStyle;
 
 %% classDef myStyle fill:#fff, stroke:blue, stroke-width:2px;
 ```

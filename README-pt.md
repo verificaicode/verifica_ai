@@ -134,8 +134,6 @@ flowchart TD
     D1 --> |Não: Desinformação| C2
     C2 --> U2
 
-%% class Text1 myStyle;
-
 %% classDef myStyle fill:#fff, stroke:blue, stroke-width:2px;
 ```
 
@@ -166,6 +164,7 @@ A IA realiza uma classificação primária, identificando se o conteúdo é:
 &nbsp;&nbsp;&nbsp;&nbsp;Após essa etapa, o resultado final é enviado ao usuário, que vê apenas o diagnóstico final, sem ter acesso às etapas intermediárias.
 
 ---
+
 ## Diagrama de classes
 ```mermaid
 classDiagram

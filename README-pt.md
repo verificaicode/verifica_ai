@@ -1,5 +1,9 @@
 # Verifica AI
 
+🌐 Language:
+- 🇧🇷 [Português](atual)
+- 🇺🇸 [English](README.md)
+
 &nbsp;&nbsp;&nbsp;&nbsp;O Verifica AI é um sistema automatizado para análise e verificação de postagens do Instagram. Utilizando a API Gemini para inteligência artificial e a biblioteca Instaloader para coleta de dados, o projeto identifica a veracidade do conteúdo de acordo com os [**tipos de notícia**](#tipos-de-notícia) e fornece uma análise detalhada com fontes ordenadas por grau de confiança.
 
 ---
@@ -15,6 +19,7 @@ Recall: 98%
 🎯 Problema e Motivação
 
 &nbsp;&nbsp;&nbsp;&nbsp;A rápida disseminação de informação em redes sociais ampliou significamente a disseminação de desinformação. Plataformas como o Instagram apresentam alguns desafios para a sua detecção, como conteúdos multimodais e a elevada velocidade de compartilhamento de informações.
+
 &nbsp;&nbsp;&nbsp;&nbsp;Nesse contexto, o Verifica AI foi desenvolvido para fornecer uma solução automatizada capaz de analisar, classificar e contextualizar potenciais conteúdos de desinformação, contribuindo com a mitigação dos impactos da desinformação.
 
 ---
@@ -261,5 +266,9 @@ Desenvolvido por:
 - Aquilis Alves de Melo Oliveira
 - Isabella dos Santos Caruso
 - Vítor Emanuel da Silva Rodrigues
+
+Orientação:
+- Abraão Lima Sousa (orientador)
+- Victor Eduardo Alves da Silva Carvalho (coorientador)
 
 Mantenedor principal: @vitor-research

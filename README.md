@@ -1,6 +1,10 @@
 # Verifica AI
 
-Verifica AI is an automated system for the analysis and verification of Instagram posts. Leveraging the Gemini API for artificial intelligence and the Instaloader library for data collection, the system assesses content veracity according to predefined misinformation categories and provides a detailed analysis with sources ranked by reliability.
+🌐 Idioma:
+- 🇧🇷 [Português](README-pt.md)
+- 🇺🇸 [English](current)
+
+&nbsp;&nbsp;&nbsp;&nbsp;Verifica AI is an automated system for the analysis and verification of Instagram posts. Leveraging the Gemini API for artificial intelligence and the Instaloader library for data collection, the system assesses content veracity according to predefined misinformation categories and provides a detailed analysis with sources ranked by reliability.
 
 ---
 
@@ -13,9 +17,9 @@ Recall: 98%
 
 🎯 Problem and Motivation
 
-The rapid dissemination of information on social media has significantly intensified the spread of misinformation. Platforms such as Instagram present specific challenges for its detection, including the presence of multimodal content and the high velocity of information sharing.
+&nbsp;&nbsp;&nbsp;&nbsp;The rapid dissemination of information on social media has significantly intensified the spread of misinformation. Platforms such as Instagram present specific challenges for its detection, including the presence of multimodal content and the high velocity of information sharing.
 
-In this context, Verifica AI was developed as an automated solution designed to analyze, classify, and contextualize potentially misleading content, contributing to the mitigation of the impacts of misinformation.
+&nbsp;&nbsp;&nbsp;&nbsp;In this context, Verifica AI was developed as an automated solution designed to analyze, classify, and contextualize potentially misleading content, contributing to the mitigation of the impacts of misinformation.
 
 ---
 
@@ -126,35 +130,127 @@ flowchart TD
     D1 --> |Yes| U2
     D1 --> |No: Misinformation| C2
     C2 --> U2
-Flow Description
+    
+%% class Text1 myStyle;
 
-User: Sends a message that may contain text, image, or video.
+%% classDef myStyle fill:#fff, stroke:blue, stroke-width:2px;
+```
 
-Verifica AI: Receives the message and, in an automated and transparent manner, extracts relevant data (text, caption, date, image, or video) and forwards it for analysis.
+## Flow Description
+**User:** Sends a message that may contain text, image, or video.
 
-Artificial Intelligence Analysis (GEMINI):
+**Verifica AI:** Receives the message and, in an automated and transparent manner, extracts relevant data (text, caption, date, image, or video) and forwards it for analysis.
+
+**Artificial Intelligence Analysis (GEMINI):**
 The AI performs a primary classification, identifying whether the content is:
+- Fact
+- Undetermined
+- Misinformation
 
-Fact
-Undetermined
-Misinformation
+&nbsp;&nbsp;&nbsp;&nbsp;If the content is classified as fact or undetermined, Verifica AI immediately returns the result to the user.
 
-If the content is classified as fact or undetermined, Verifica AI immediately returns the result to the user.
+&nbsp;&nbsp;&nbsp;&nbsp;If the content is classified as misinformation, a second analysis is performed to determine the specific type of misinformation, among the following categories:
 
-If the content is classified as misinformation, a second analysis is performed to determine the specific type of misinformation, among the following categories:
+- Satire or parody
+- False connection
+- Misleading content
+- False context
+- Imposter content
+- Manipulated content
+- Fabricated content
 
-Satire or parody
-False connection
-Misleading content
-False context
-Imposter content
-Manipulated content
-Fabricated content
+&nbsp;&nbsp;&nbsp;&nbsp;After this step, the final result is sent to the user, who only sees the final diagnosis without access to intermediate steps.
 
-After this step, the final result is sent to the user, who only sees the final diagnosis without access to intermediate steps.
+## Class diagram
+```mermaid
+classDiagram
+  class AppContext{
+    +models
+    +posts
+    +instaloader_context
+    +TEMP_PATH
+    +USERNAME
+    +PASSWORD
+    +API_GEMINI_KEY
+    +PAGE_ACCESS_TOKEN
+    +DEBUG
+    +VERIFY_TOKEN
+    +VERIFICA_AI_SERVER
+    +VERIFICA_AI_PROXY
+  }
 
-Class Diagram
-Sequence Diagram
+  class Server {
+    +process()
+    +connect_to_server()
+    +connect()
+    +disconnect()
+    +resgister_routes()
+    +webhook_socketio()
+    +webhook_flask()
+    +loop()
+    +run_app_flask()
+    +run_flask_server()
+  }
+
+  class InputHandler {
+    +process_webhook_message()
+    +process_input()
+  }
+
+  class ContentExtractor {
+    +instaloader_context
+    +posts
+    +get_content_object()
+  }
+
+  class Uploader {
+    +file_uploader()
+  }
+
+  class ResponseProcessor {
+    +client
+    +models
+    +content_categories
+    +type_fake_name_classes
+    +get_result_from_process()
+  }
+
+  class GeminiResponseGenerator {
+    +generate_response()
+    +get_gemini_response()
+  }
+
+  Server --> AppContext : «2» defines constants
+  Server --> InputHandler
+  InputHandler --> ContentExtractor : «3» extract content
+  InputHandler --> Uploader        : «4» upload media to GEMINI server
+  InputHandler --> ResponseProcessor : «5» processes the response generated by the AI
+  ResponseProcessor --> GeminiResponseGenerator : «5» generates response
+```
+
+## Sequence diagram
+
+```mermaid
+sequenceDiagram
+  participant User
+  participant Server
+  participant InputHandler
+  participant ContentExtractor
+  participant Uploader
+  participant ResponseProcessor
+  participant GeminiResponseGenerator
+
+  User->>Server: send message (webhook)
+  Server->>InputHandler: process_input()
+  InputHandler->>ContentExtractor: get_content_object()
+  InputHandler->>Uploader: file_uploader()
+  InputHandler->>ResponseProcessor: get_result_from_process()
+  ResponseProcessor->>GeminiResponseGenerator: get_gemini_response()
+  GeminiResponseGenerator-->>ResponseProcessor: response
+  ResponseProcessor-->>InputHandler: final result
+  InputHandler-->>Server: processed response
+  Server-->>User: send response
+```
 
 ---
 
@@ -164,5 +260,9 @@ Developed by:
 - Aquilis Alves de Melo Oliveira
 - Isabella dos Santos Caruso
 - Vítor Emanuel da Silva Rodrigues
+
+Advising:
+- Abraão Lima Sousa (advisor)
+- Victor Eduardo Alves da Silva Carvalho (co-advisor)
 
 Core maintainer: @vitor-research

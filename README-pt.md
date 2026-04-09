@@ -1,5 +1,18 @@
 # Verifica AI
 
+## 📄 Registro de Software
+
+- Número de registro: BR512026001679-7 
+- Instituição: INPI (Brasil)  
+- Status: Registrado
+
+🔗 [Detalhamento sobre o registro](docs/registration-pt.md)  
+📑 [Certificado oficial (PDF)](docs/software-registration.pdf)
+
+Esse repositório contém a implementação oficial do software registrado.
+
+---
+
 📄 **Artigo:** [Leia o artigo](https://verificaicode.github.io/verifica_ai/artigo-febrace-2025.pdf)
 
 🌐 Idioma:

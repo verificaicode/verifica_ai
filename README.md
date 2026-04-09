@@ -4,7 +4,10 @@
 
 - Registration number: BR512026001679-7 
 - Institution: INPI (Brazil)  
-- Status: Registered  
+- Status: Registered
+
+🔗 [Full registration details](docs/registration.md)  
+📑 [Official certificate (PDF)](docs/software-registration.pdf)
 
 This repository contains the official implementation of the registered software.
 

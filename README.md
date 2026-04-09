@@ -11,9 +11,9 @@
 ---
 
 📊 Results
-Accuracy: 97%
-Precision: 98%
-Recall: 98%
+- Acurácia: 97%
+- Precisão: 98%
+- Recall: 98%
 
 ---
 
@@ -36,9 +36,9 @@ Recall: 98%
 
 The system was evaluated based on the following metrics:  
 
-- Accuracy  
-- Precision  
-- Recall  
+- Accuracy: proportion of correct predictions  
+- Precision: ratio of true positives to predicted positives  
+- Recall: ratio of true positives to actual positives
 
 ⚠️ Error Analysis
 

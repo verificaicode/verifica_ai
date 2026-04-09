@@ -12,9 +12,9 @@
 
 📊 Resultados
 
-Acurácia: 97%
-Precisão: 98%
-Recall: 98%
+- Acurácia: 97%
+- Precisão: 98%
+- Recall: 98%
 
 ---
 
@@ -38,9 +38,9 @@ Recall: 98%
 
 O sistema foi avaliado com base nas seguintes métricas:  
 
-- Acurácia  
-- Precisão  
-- Recall  
+- Acurácia: proporção de prvisões corretas
+- Precision: razão entre verdadeiros positivos e previsões positivas
+- Recall: razão entre verdadeiros positivos e positivos reais
 
 ⚠️ Análise de erros
 

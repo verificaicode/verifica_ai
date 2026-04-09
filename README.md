@@ -1,6 +1,6 @@
 # Verifica AI
 
-📄 **Article:** [Read the paper](docs/artigo-febrace-2025.pdf)
+📄 **Article:** [Read the paper](https://verificaicode.github.io/verifica_ai/artigo-febrace-2025.pdf)
 
 🌐 Language:
 - 🇧🇷 [Português](README-pt.md)
